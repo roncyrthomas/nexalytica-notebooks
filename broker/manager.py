@@ -62,7 +62,13 @@ class NotebookManager:
     def _start(self, uuid, volume, token, port):
         return self.client.containers.run(
             IMAGE, detach=True,
-            command=["start-notebook.py", f"--ServerApp.base_url={base_url(uuid)}"],
+            command=["start-notebook.py",
+                     f"--ServerApp.base_url={base_url(uuid)}",
+                     # the broker proxies cross-origin; auth is via the injected
+                     # token, so don't let Jupyter reject the browser's POST/WS
+                     # on XSRF / Origin checks.
+                     "--ServerApp.disable_check_xsrf=True",
+                     "--ServerApp.allow_origin=*"],
             environment={"JUPYTER_TOKEN": token},
             ports={f"{NB_PORT}/tcp": port},
             volumes={volume: {"bind": "/home/jovyan/work", "mode": "rw"}},

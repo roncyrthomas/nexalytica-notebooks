@@ -15,9 +15,10 @@ _HOP = {"connection", "keep-alive", "transfer-encoding", "upgrade",
         "proxy-authorization", "proxy-authenticate", "te", "trailer",
         "content-length", "content-encoding"}
 
-# Dropped from the request before forwarding. Keep cookies (Jupyter's auth
-# relies on them after the first token request); only drop hop-by-hop + host.
-_DROP_REQ = _HOP | {"host"}
+# Dropped from the request before forwarding. The broker authenticates to the
+# container with an injected token, so the browser's origin / XSRF headers are
+# irrelevant and otherwise trip Jupyter's checks (404/403 on POST, rejected WS).
+_DROP_REQ = _HOP | {"host", "origin", "referer", "x-xsrftoken"}
 
 
 async def proxy_http(request, uuid: str, path: str, port: int, token: str) -> Response:
