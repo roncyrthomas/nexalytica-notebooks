@@ -29,6 +29,7 @@ async def lifespan(_app: FastAPI):
     auth.init_db()
     manager = NotebookManager()
     yield
+    await proxy.aclose()
     manager.shutdown()
 
 

@@ -8,7 +8,7 @@ import asyncio
 
 import httpx
 import websockets
-from starlette.responses import Response
+from starlette.responses import Response, StreamingResponse
 from starlette.websockets import WebSocket
 
 _HOP = {"connection", "keep-alive", "transfer-encoding", "upgrade",
@@ -20,6 +20,34 @@ _HOP = {"connection", "keep-alive", "transfer-encoding", "upgrade",
 # irrelevant and otherwise trip Jupyter's checks (404/403 on POST, rejected WS).
 _DROP_REQ = _HOP | {"host", "origin", "referer", "x-xsrftoken"}
 
+# Dropped from the RESPONSE. We stream the upstream's RAW (still-compressed)
+# bytes through, so we KEEP content-encoding and let the browser decode; only
+# drop framing headers that no longer apply to our chunked stream.
+_DROP_RESP = {"transfer-encoding", "content-length", "connection",
+              "keep-alive", "upgrade", "te", "trailer"}
+
+# One pooled client for ALL asset requests. Creating a client per request (the
+# old behaviour) paid connection setup ~50x per notebook boot; a shared pool
+# with keep-alive recovers the directness the iframe version had.
+_client: httpx.AsyncClient | None = None
+
+
+def _get_client() -> httpx.AsyncClient:
+    global _client
+    if _client is None or _client.is_closed:
+        _client = httpx.AsyncClient(
+            timeout=httpx.Timeout(60.0, connect=10.0),
+            limits=httpx.Limits(max_connections=200, max_keepalive_connections=100),
+        )
+    return _client
+
+
+async def aclose():
+    global _client
+    if _client is not None and not _client.is_closed:
+        await _client.aclose()
+    _client = None
+
 
 async def proxy_http(request, uuid: str, path: str, port: int, token: str) -> Response:
     # Forward the RAW query string verbatim (Jupyter uses bare-value cache-bust
@@ -30,14 +58,23 @@ async def proxy_http(request, uuid: str, path: str, port: int, token: str) -> Re
                if k.lower() not in _DROP_REQ}
     headers["Authorization"] = f"token {token}"
     body = await request.body()
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        up = await client.request(request.method, target, content=body,
-                                  headers=headers, follow_redirects=False)
+
+    client = _get_client()
+    up_req = client.build_request(request.method, target, content=body, headers=headers)
+    up = await client.send(up_req, stream=True, follow_redirects=False)
+
     out_headers = [(k, v) for k, v in up.headers.multi_items()
-                   if k.lower() not in _HOP]
-    return Response(content=up.content, status_code=up.status_code,
-                    headers=dict(out_headers),
-                    media_type=up.headers.get("content-type"))
+                   if k.lower() not in _DROP_RESP]
+
+    async def body_stream():
+        try:
+            async for chunk in up.aiter_raw():
+                yield chunk
+        finally:
+            await up.aclose()
+
+    return StreamingResponse(body_stream(), status_code=up.status_code,
+                             headers=dict(out_headers))
 
 
 async def proxy_ws(websocket: WebSocket, uuid: str, path: str, port: int, token: str):
