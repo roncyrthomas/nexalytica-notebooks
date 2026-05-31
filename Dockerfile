@@ -6,6 +6,20 @@
 # ==========================================================================
 FROM quay.io/jupyter/base-notebook:latest
 
+# Pin STABLE JupyterLab/Notebook. base-notebook:latest tracks pre-releases
+# (e.g. jupyterlab 4.5.0a0), against which the prebuilt collaboration frontend
+# extensions fail their compat check ("enabled X") and silently don't load.
+# Stable 4.4/7.4 makes them validate ("OK").
+#
+# Real-time collaboration: lets two tabs / two browsers on the SAME notebook
+# share one live document (shared Y.Doc over /api/collaboration/* WebSocket,
+# proxied transparently under /nb/<uuid>/). Without it, tabs are independent
+# views and saves clobber each other.
+RUN pip install --no-cache-dir \
+        "jupyterlab>=4.4,<4.5" "notebook>=7.4,<7.5" "jupyter-collaboration>=4,<5" && \
+    jupyter lab build 2>/dev/null || true && \
+    fix-permissions "${CONDA_DIR}" && fix-permissions "/home/${NB_USER}"
+
 COPY dist/nexalytica-themes /opt/conda/share/jupyter/labextensions/nexalytica-themes
 
 

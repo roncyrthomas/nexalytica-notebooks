@@ -1,0 +1,12 @@
+﻿JupyterLab v4.5.7
+/opt/conda/share/jupyter/labextensions
+        jupyterlab_pygments v0.3.0 [32menabled[0m [32mOK[0m (python, jupyterlab_pygments)
+        nexalytica-themes v0.1.0 [32menabled[0m [32mOK[0m
+        @jupyter-notebook/lab-extension v7.5.6 [32menabled[0m [32mOK[0m
+        @jupyter/collaboration-extension v3.1.2 [32menabled[0m [32mOK[0m (python, jupyter-collaboration-ui)
+        @jupyter/docprovider-extension v3.1.2 [32menabled[0m [32mOK[0m (python, jupyter-docprovider)
+
+
+Disabled extensions:
+    @jupyterlab/filebrowser-extension:defaultFileBrowser
+    @jupyterlab/notebook-extension:cell-executor
