@@ -45,10 +45,12 @@ async def proxy_ws(websocket: WebSocket, uuid: str, path: str, port: int, token:
     requested = [p.strip() for p in proto.split(",")] if proto else None
     qs = websocket.url.query
     target = f"ws://127.0.0.1:{port}/nb/{uuid}/{path}" + (f"?{qs}" if qs else "")
-    # Retry through the brief window where a just-created kernel isn't ready yet
-    # (Jupyter answers the channels WS with 403 until the kernel has started).
+    # A freshly-created kernel's channels WS is refused (403/connection error)
+    # for the first few seconds while the kernel boots. Ride that out within a
+    # SINGLE browser connection (~15s) instead of giving up early — closing here
+    # makes the browser reconnect-storm ("Connection lost, reconnecting...").
     upstream = None
-    for attempt in range(6):
+    for _ in range(30):
         try:
             upstream = await websockets.connect(
                 target, subprotocols=requested,
@@ -56,12 +58,14 @@ async def proxy_ws(websocket: WebSocket, uuid: str, path: str, port: int, token:
                 max_size=None, open_timeout=20, ping_interval=None)
             break
         except Exception:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.5)
     if upstream is None:
         await websocket.accept(subprotocol=requested[0] if requested else None)
         await websocket.close(code=1011)
         return
 
+    # Echo the subprotocol upstream actually negotiated (None -> JSON mode, which
+    # the browser handles); never claim a protocol the upstream isn't speaking.
     await websocket.accept(subprotocol=upstream.subprotocol)
 
     async def client_to_upstream():
