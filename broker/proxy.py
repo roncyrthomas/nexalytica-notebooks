@@ -44,12 +44,20 @@ async def proxy_ws(websocket: WebSocket, uuid: str, path: str, port: int, token:
     requested = [p.strip() for p in proto.split(",")] if proto else None
     qs = websocket.url.query
     target = f"ws://127.0.0.1:{port}/nb/{uuid}/{path}" + (f"?{qs}" if qs else "")
-    try:
-        upstream = await websockets.connect(
-            target, subprotocols=requested,
-            additional_headers={"Authorization": f"token {token}"},
-            max_size=None, open_timeout=20, ping_interval=None)
-    except Exception:
+    # Retry through the brief window where a just-created kernel isn't ready yet
+    # (Jupyter answers the channels WS with 403 until the kernel has started).
+    upstream = None
+    for attempt in range(6):
+        try:
+            upstream = await websockets.connect(
+                target, subprotocols=requested,
+                additional_headers={"Authorization": f"token {token}"},
+                max_size=None, open_timeout=20, ping_interval=None)
+            break
+        except Exception:
+            await asyncio.sleep(0.4)
+    if upstream is None:
+        await websocket.accept(subprotocol=requested[0] if requested else None)
         await websocket.close(code=1011)
         return
 
