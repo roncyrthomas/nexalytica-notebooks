@@ -144,6 +144,31 @@ html, body {
 .empty .big { font-size: 17px; font-weight: 600; color: var(--fg); }
 .empty .sub { font-size: 13px; max-width: 320px; }
 
+/* ---- Loading skeleton (shimmer) --------------------------------------- */
+.loading {
+  position: absolute; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 22px; padding: 40px;
+}
+.loading[hidden] { display: none; }
+.loading .sk { width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 14px; }
+.sk-bar, .sk-card {
+  border-radius: 8px;
+  background: linear-gradient(90deg,
+    color-mix(in oklch, var(--fg) 6%, transparent) 25%,
+    color-mix(in oklch, var(--fg) 13%, transparent) 37%,
+    color-mix(in oklch, var(--fg) 6%, transparent) 63%);
+  background-size: 400% 100%;
+  animation: nx-shimmer 1.4s ease-in-out infinite;
+}
+.sk-bar { height: 13px; }
+.sk-bar.w40 { width: 40%; } .sk-bar.w50 { width: 50%; }
+.sk-bar.w55 { width: 55%; } .sk-bar.w70 { width: 70%; } .sk-bar.w80 { width: 80%; }
+.sk-card { height: 150px; border-radius: 12px; margin: 6px 0; }
+.sk-card-sm { height: 90px; }
+.sk-note { color: var(--muted-fg); font-size: 13px; }
+@keyframes nx-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+
 /* ---- Context menu ------------------------------------------------------ */
 .ctx-menu {
   position: fixed; z-index: 100;

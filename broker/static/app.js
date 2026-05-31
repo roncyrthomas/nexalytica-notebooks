@@ -15,12 +15,14 @@ const THEMES = [
 
 const els = {
   list: document.getElementById('list'), frames: document.getElementById('frames'),
-  empty: document.getElementById('empty'), theme: document.getElementById('theme'),
+  empty: document.getElementById('empty'), loading: document.getElementById('loading'),
+  theme: document.getElementById('theme'),
   email: document.getElementById('email'), newBtn: document.getElementById('new-btn'),
   search: document.getElementById('search'), logout: document.getElementById('logout'),
   ctx: document.getElementById('ctx-menu')
 };
 let notebooks = [], activeId = null, filter = '', ctxTarget = null, counter = 0;
+const loaded = new Set();   // notebook ids whose iframe has finished loading
 
 const themeId = () => localStorage.getItem('nx-theme') || 'default-dark';
 const nbThemeName = () => (THEMES.find(t => t.id === themeId()) || THEMES[0]).nb;
@@ -38,8 +40,13 @@ function applyTheme(id) { document.documentElement.setAttribute('data-nx', id); 
 
 function ensureFrame(n) {
   let f = document.getElementById(`f-${n.id}`);
-  if (!f) { f = document.createElement('iframe'); f.id = `f-${n.id}`; f.src = n.url; els.frames.appendChild(f); }
-  else if (f.src !== location.origin + n.url && f.getAttribute('src') !== n.url) { f.src = n.url; }
+  if (!f) {
+    f = document.createElement('iframe'); f.id = `f-${n.id}`; f.src = n.url;
+    f.addEventListener('load', () => { loaded.add(n.id); if (activeId === n.id) els.loading.hidden = true; });
+    els.frames.appendChild(f);
+  } else if (f.getAttribute('src') !== n.url) {
+    loaded.delete(n.id); f.src = n.url;
+  }
   return f;
 }
 function showActive() {
@@ -47,6 +54,7 @@ function showActive() {
   const n = find(activeId), running = n && n.running;
   if (running) ensureFrame(n).classList.add('active');
   els.empty.classList.toggle('hidden', !!running);
+  els.loading.hidden = !running || loaded.has(activeId);   // shimmer until iframe loads
   render();
 }
 function routeTo(id) {
@@ -71,14 +79,14 @@ async function renameNotebook(id) {
 }
 async function closeNotebook(id) {
   const n = find(id); Object.assign(n, await api(`/api/notebooks/${id}/close`, 'POST'));
-  const f = document.getElementById(`f-${id}`); if (f) f.remove();
+  const f = document.getElementById(`f-${id}`); if (f) f.remove(); loaded.delete(id);
   if (activeId === id) { activeId = null; routeTo(null); }
   showActive();
 }
 async function deleteNotebook(id) {
   const n = find(id); if (!window.confirm(`Delete "${n.name}"? Files are removed permanently.`)) return;
   await api(`/api/notebooks/${id}`, 'DELETE');
-  const f = document.getElementById(`f-${id}`); if (f) f.remove();
+  const f = document.getElementById(`f-${id}`); if (f) f.remove(); loaded.delete(id);
   notebooks = notebooks.filter(x => x.id !== id);
   if (activeId === id) { activeId = null; routeTo(null); }
   showActive();
