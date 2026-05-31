@@ -1,0 +1,490 @@
+/* ============================================================================
+   Nexalytica - Notebook 7 skin: bespoke, editor-grade, calm, theme-independent.
+   Looks like a notebook built into a ground-up app (Deepnote / Hex / VS Code).
+     - ONE seamless background; wide flat layout; hidden prompts.
+     - Lightweight enterprise chrome (menus + dense power-user toolbar).
+     - Refined code cells with a CLEAR premium active-cell border.
+   All colors derive from JupyterLab CSS vars, so all 8 Nexalytica palettes
+   (light + dark) inherit correctly. No hardcoded colors.
+   ============================================================================ */
+
+:root {
+  --nx-radius: 10px;
+  --nx-gap: 14px;                 /* space between cells                  */
+  --nx-pad-x: 18px;               /* inner horizontal padding             */
+  --nx-pad-y: 12px;               /* inner vertical padding               */
+  --nx-rail-w: 3px;               /* active-cell brand rail               */
+  --nx-side: 56px;                /* page side gutter                     */
+  --nx-maxw: 1140px;              /* content width (wide, app-native)     */
+
+  --nx-surface: var(--jp-layout-color1);                                   /* code/input block surface */
+  --nx-hairline: color-mix(in oklch, var(--jp-border-color1) 55%, transparent);
+
+  /* zero the reserved prompt gutter so content is flush-left */
+  --jp-cell-prompt-width: 0px;
+}
+
+/* ---------------------------------------------------------------------------
+   1. ONE seamless background.
+   --------------------------------------------------------------------------- */
+body,
+#main-panel,
+.jp-NotebookPanel,
+.jp-WindowedPanel-outer,
+.jp-WindowedPanel-viewport,
+.jp-Notebook {
+  background: var(--jp-layout-color0) !important;
+  box-shadow: none !important;
+}
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------------------------------------------------------------------------
+   2. Enterprise chrome: lightweight identity bar + menu bar + dense toolbar.
+   --------------------------------------------------------------------------- */
+#top-panel {
+  background: var(--jp-layout-color0) !important;
+  border-bottom: 1px solid var(--nx-hairline);
+  min-height: 38px;
+  padding: 0 var(--nx-side);
+  box-shadow: none !important;
+}
+.jp-skiplink,
+#jp-NotebookLogo,
+.jp-NotebookKernelLogo,
+.jp-NotebookTrustedStatus { display: none !important; }
+#jp-title { font-weight: 600; color: var(--jp-ui-font-color0); }
+
+#menu-panel {
+  background: var(--jp-layout-color0) !important;
+  border-bottom: 1px solid var(--nx-hairline);
+  min-height: 34px;
+  padding: 0 calc(var(--nx-side) - 10px);
+  box-shadow: none !important;
+}
+/* Menu-bar widget carries a lighter bg only as wide as its items (stray
+   rectangle). Make it transparent so it blends into the seamless header. */
+#menu-panel #jp-MainMenu,
+#menu-panel .lm-MenuBar {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+#menu-panel .lm-MenuBar-content { font-size: 12.5px; font-weight: 500; }
+#menu-panel .lm-MenuBar-item {
+  padding: 4px 11px; margin: 0 1px; border-radius: 7px;
+  color: var(--jp-ui-font-color2);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+#menu-panel .lm-MenuBar-item:hover,
+#menu-panel .lm-MenuBar-item.lm-mod-active {
+  color: var(--jp-ui-font-color0);
+  background: color-mix(in oklch, var(--jp-ui-font-color1) 9%, transparent);
+}
+
+/* Premium dropdown menus (File/Edit/... popups + right-click menus). */
+.lm-Menu {
+  background: var(--jp-layout-color1) !important;
+  border: 1px solid var(--nx-hairline) !important;
+  border-radius: 11px !important;
+  box-shadow: 0 14px 40px -10px rgba(0, 0, 0, 0.5) !important;
+  padding: 5px !important;
+}
+.lm-Menu-content { padding: 0 !important; }
+.lm-Menu-item { border-radius: 7px; padding: 1px 2px; }
+.lm-Menu-item.lm-mod-active {
+  background: color-mix(in oklch, var(--jp-ui-font-color1) 11%, transparent) !important;
+}
+.lm-Menu-itemLabel { font-size: 12.5px; }
+.lm-Menu-itemShortcut { font-size: 11.5px; color: var(--jp-ui-font-color3); }
+
+.jp-NotebookPanel-toolbar {
+  background: var(--jp-layout-color0) !important;
+  border: none;
+  border-bottom: 1px solid var(--nx-hairline);
+  box-shadow: none !important;
+  min-height: 40px;
+  padding: 0 var(--nx-side);
+  align-items: center;
+  gap: 1px;
+}
+.jp-NotebookPanel-toolbar .jp-ToolbarButtonComponent {
+  background: transparent;
+  border-radius: 6px;
+}
+.jp-NotebookPanel-toolbar .jp-ToolbarButtonComponent:hover {
+  background: color-mix(in oklch, var(--jp-ui-font-color1) 8%, transparent);
+}
+.jp-NotebookPanel-toolbar .jp-Toolbar-item[data-jp-item-name="debugger-icon"],
+.jp-NotebookPanel-toolbar .jp-Toolbar-item[data-jp-item-name="kernelLogo"],
+.jp-NotebookPanel-toolbar .jp-Toolbar-item[data-jp-item-name="interfaceSwitcher"],
+.jp-NotebookPanel-toolbar .jp-Toolbar-item[data-jp-item-name="read-only-indicator"],
+.jp-NotebookPanel-toolbar .jp-Toolbar-item[data-jp-item-name="Notebook checkpoint diff"],
+.jp-NotebookPanel-toolbar .jp-Toolbar-item[data-jp-item-name="Notebook Git diff"] {
+  display: none !important;
+}
+.jp-cell-toolbar { display: none !important; }
+
+/* ---------------------------------------------------------------------------
+   3. Wide content column, symmetric gutters, calm top.
+   --------------------------------------------------------------------------- */
+.jp-WindowedPanel-outer {
+  padding-left: var(--nx-side) !important;
+  padding-right: var(--nx-side) !important;
+}
+.jp-Notebook { padding-top: 16px; }
+.jp-WindowedPanel-viewport { padding-bottom: 40vh; }
+
+.jp-Notebook .jp-Cell {
+  max-width: var(--nx-maxw);
+  margin: 0 auto var(--nx-gap);
+  padding: 0;
+  background: transparent;
+  position: relative;
+}
+
+/* ---------------------------------------------------------------------------
+   4. Hide prompts + collapse the gutter so input/output sit flush-left.
+   --------------------------------------------------------------------------- */
+.jp-InputPrompt,
+.jp-OutputPrompt { display: none !important; }
+.jp-Cell .jp-Collapser {
+  flex: 0 0 0; width: 0; min-width: 0;
+  margin: 0; padding: 0; background: transparent; border: none;
+}
+
+/* ---------------------------------------------------------------------------
+   5. CODE CELLS - refined editor surface; input + output read as one unit.
+   --------------------------------------------------------------------------- */
+.jp-Notebook .jp-CodeCell {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+/* Input surface = the bespoke card. Constant 1px border in ALL states (only
+   the color changes when active) so activating never shifts the layout. */
+.jp-CodeCell .jp-Cell-inputWrapper {
+  background: var(--nx-surface);
+  border: 1px solid var(--nx-hairline);
+  border-radius: var(--nx-radius);
+  overflow: hidden;
+  transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+.jp-CodeCell .jp-InputArea,
+.jp-CodeCell .jp-InputArea-editor {
+  background: transparent;
+  border: 0 !important;
+}
+.jp-CodeCell .jp-InputArea-editor {
+  padding: var(--nx-pad-y) var(--nx-pad-x);
+  font-family: var(--jp-code-font-family);
+}
+.jp-CodeCell .cm-editor,
+.jp-CodeCell .cm-editor .cm-scroller { background: transparent; }
+.jp-CodeCell .cm-scroller { line-height: 1.6; overflow-x: auto; }
+.jp-CodeCell .cm-content { caret-color: var(--jp-brand-color1); }
+
+.jp-CodeCell .cm-gutters {
+  background: transparent; border: none; color: var(--jp-ui-font-color3);
+}
+.jp-CodeCell .cm-lineNumbers .cm-gutterElement {
+  color: color-mix(in oklch, var(--jp-ui-font-color3) 75%, transparent);
+  transition: color .15s ease;
+}
+.jp-CodeCell .cm-activeLine {
+  background: color-mix(in oklch, var(--jp-layout-color3) 22%, transparent);
+}
+.jp-CodeCell .cm-activeLineGutter {
+  background: transparent; color: var(--jp-ui-font-color2);
+}
+
+/* Kill JupyterLab / CodeMirror 6 default focused-editor chrome so ONLY our
+   active-cell styling signals focus. (Covers an edited markdown cell too.) */
+.jp-Notebook .cm-editor.cm-focused,
+.jp-Notebook .cm-focused,
+.jp-Notebook .jp-InputArea-editor.jp-mod-focused,
+.jp-Notebook .jp-InputArea-editor.jp-mod-focused .cm-editor.cm-focused {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Very faint hover on idle cells - feedback without noise. */
+.jp-Notebook .jp-CodeCell:not(.jp-mod-active):not(.jp-mod-selected):hover
+  .jp-Cell-inputWrapper {
+  border-color: color-mix(in oklch, var(--jp-border-color1) 80%, transparent);
+}
+
+/* ---- 5b. Outputs - clean zone attached below the input ------------------- */
+.jp-CodeCell .jp-Cell-outputWrapper {
+  background: transparent; border: none; margin-top: 8px;
+}
+.jp-CodeCell .jp-OutputArea { background: transparent; }
+.jp-CodeCell .jp-OutputArea-child { background: transparent; padding: 4px var(--nx-pad-x); }
+.jp-CodeCell .jp-OutputArea-output {
+  background: transparent; color: var(--jp-content-font-color1);
+}
+.jp-CodeCell .jp-OutputArea-output pre,
+.jp-CodeCell .jp-OutputArea-output.jp-RenderedText,
+.jp-CodeCell .jp-OutputArea-output .jp-RenderedText pre {
+  font-family: var(--jp-code-font-family);
+  line-height: 1.55;
+  color: var(--jp-content-font-color1);
+}
+.jp-CodeCell .jp-OutputArea-output.jp-RenderedText[data-mime-type*="stderr"],
+.jp-CodeCell .jp-OutputArea-output.jp-RenderedText[data-mime-type*="error"],
+.jp-CodeCell .jp-OutputArea-output .jp-RenderedText[data-mime-type*="stderr"],
+.jp-CodeCell .jp-OutputArea-output .jp-RenderedText[data-mime-type*="error"] {
+  background: color-mix(in oklch, var(--jp-error-color1, var(--jp-brand-color1)) 8%, transparent);
+  border-radius: calc(var(--nx-radius) - 2px);
+  padding: 8px 12px;
+}
+.jp-CodeCell .jp-OutputArea-output > img,
+.jp-CodeCell .jp-OutputArea-output > canvas,
+.jp-CodeCell .jp-OutputArea-output .jp-RenderedImage > img,
+.jp-CodeCell .jp-OutputArea-output .jp-RenderedImage > canvas {
+  max-width: 100%; height: auto; border-radius: calc(var(--nx-radius) - 2px);
+}
+
+/* ---------------------------------------------------------------------------
+   6. ACTIVE / SELECTED CELL - brand rail + clear premium brand ring.
+   --------------------------------------------------------------------------- */
+.jp-Notebook .jp-Cell::before {
+  content: "";
+  position: absolute;
+  left: -20px; top: 2px; bottom: 2px;
+  width: var(--nx-rail-w);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--jp-border-color1) 30%, transparent);
+  opacity: .5;
+  transition: background-color .15s ease, opacity .15s ease;
+  pointer-events: none;
+}
+
+/* Selected (not active) - the same language, dialed down. */
+.jp-Notebook .jp-Cell.jp-mod-selected:not(.jp-mod-active)::before {
+  background: color-mix(in oklch, var(--jp-brand-color1) 45%, transparent);
+  opacity: 1;
+}
+.jp-Notebook .jp-CodeCell.jp-mod-selected:not(.jp-mod-active) .jp-Cell-inputWrapper {
+  border-color: color-mix(in oklch, var(--jp-brand-color1) 38%, var(--nx-hairline));
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--jp-brand-color1) 10%, transparent);
+}
+
+/* Active - full brand rail + a clear 1.5px brand ring (inset, no geometry
+   change) + a soft outer brand halo + a faint brand wash. */
+.jp-Notebook .jp-Cell.jp-mod-active::before {
+  background: var(--jp-brand-color1);
+  opacity: 1;
+}
+.jp-Notebook .jp-CodeCell.jp-mod-active .jp-Cell-inputWrapper {
+  background: color-mix(in oklch, var(--jp-brand-color1) 5%, var(--nx-surface));
+  border-color: color-mix(in oklch, var(--jp-brand-color1) 80%, transparent);
+  box-shadow:
+    inset 0 0 0 1.5px var(--jp-brand-color1),
+    0 0 0 1px color-mix(in oklch, var(--jp-brand-color1) 22%, transparent),
+    0 4px 14px -8px color-mix(in oklch, var(--jp-brand-color1) 40%, transparent);
+}
+.jp-Notebook .jp-CodeCell.jp-mod-active .cm-activeLine {
+  background: color-mix(in oklch, var(--jp-brand-color1) 8%, transparent);
+}
+.jp-Notebook .jp-CodeCell.jp-mod-active .cm-lineNumbers .cm-gutterElement {
+  color: var(--jp-ui-font-color2);
+}
+
+/* Markdown active - rail + a whisper brand wash; stays clean prose (no card). */
+.jp-Notebook .jp-MarkdownCell.jp-mod-active::before { background: var(--jp-brand-color1); opacity: 1; }
+.jp-Notebook .jp-MarkdownCell.jp-mod-selected:not(.jp-mod-active)::before {
+  background: color-mix(in oklch, var(--jp-brand-color1) 45%, transparent); opacity: 1;
+}
+.jp-Notebook .jp-MarkdownCell.jp-mod-active .jp-RenderedMarkdown {
+  background: color-mix(in oklch, var(--jp-brand-color1) 3.5%, transparent);
+  border-radius: var(--nx-radius);
+}
+/* Markdown being edited - same brand ring as a code cell for consistency. */
+.jp-Notebook .jp-MarkdownCell.jp-mod-active .jp-Cell-inputWrapper {
+  background: var(--nx-surface);
+  border-radius: var(--nx-radius);
+  box-shadow:
+    inset 0 0 0 1.5px var(--jp-brand-color1),
+    0 0 0 1px color-mix(in oklch, var(--jp-brand-color1) 22%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   7. MARKDOWN - elegant borderless prose (no card).
+   --------------------------------------------------------------------------- */
+.jp-Notebook .jp-MarkdownCell { background: transparent; border: none; box-shadow: none; }
+.jp-RenderedMarkdown,
+.jp-MarkdownCell .jp-RenderedHTMLCommon {
+  background: transparent; border: none;
+  color: var(--jp-content-font-color1);
+  font-family: var(--jp-content-font-family);
+  line-height: 1.62;
+  padding: var(--nx-pad-y) var(--nx-pad-x);
+}
+.jp-RenderedMarkdown > :first-child { margin-top: 0; }
+.jp-RenderedMarkdown > :last-child { margin-bottom: 0; }
+
+.jp-RenderedMarkdown h1,
+.jp-RenderedMarkdown h2,
+.jp-RenderedMarkdown h3,
+.jp-RenderedMarkdown h4,
+.jp-RenderedMarkdown h5,
+.jp-RenderedMarkdown h6 {
+  color: var(--jp-content-font-color0);
+  font-family: var(--jp-content-font-family);
+  font-weight: 650; line-height: 1.3; letter-spacing: -0.01em;
+  margin: 1.4em 0 .5em;
+}
+.jp-RenderedMarkdown h1 { font-size: 1.9em; letter-spacing: -0.02em; }
+.jp-RenderedMarkdown h2 { font-size: 1.5em; }
+.jp-RenderedMarkdown h3 { font-size: 1.25em; }
+.jp-RenderedMarkdown h4 { font-size: 1.08em; }
+.jp-RenderedMarkdown h5 { font-size: .95em; color: var(--jp-content-font-color1); }
+.jp-RenderedMarkdown h6 {
+  font-size: .85em; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--jp-ui-font-color2);
+}
+.jp-RenderedMarkdown h1,
+.jp-RenderedMarkdown h2 {
+  padding-bottom: .24em;
+  border-bottom: 1px solid color-mix(in oklch, var(--jp-border-color2) 60%, transparent);
+}
+.jp-RenderedMarkdown h1:first-child,
+.jp-RenderedMarkdown h2:first-child,
+.jp-RenderedMarkdown h3:first-child { margin-top: .2em; }
+
+.jp-RenderedMarkdown p { margin: 0 0 .85em; }
+.jp-RenderedMarkdown a {
+  color: var(--jp-brand-color1); text-decoration: none;
+  border-bottom: 1px solid color-mix(in oklch, var(--jp-brand-color1) 35%, transparent);
+  transition: border-color .15s ease, color .15s ease;
+}
+.jp-RenderedMarkdown a:hover {
+  color: var(--jp-brand-color2, var(--jp-brand-color1));
+  border-bottom-color: var(--jp-brand-color1);
+}
+.jp-RenderedMarkdown :not(pre) > code {
+  font-family: var(--jp-code-font-family); font-size: .88em;
+  padding: .12em .42em; border-radius: 6px;
+  background: color-mix(in oklch, var(--jp-layout-color2) 55%, transparent);
+  color: var(--jp-content-font-color0);
+  border: 1px solid color-mix(in oklch, var(--jp-border-color2) 50%, transparent);
+}
+.jp-RenderedMarkdown pre {
+  font-family: var(--jp-code-font-family); line-height: 1.55;
+  background: var(--nx-surface);
+  border: 1px solid var(--nx-hairline);
+  border-radius: var(--nx-radius);
+  padding: var(--nx-pad-y) var(--nx-pad-x);
+  overflow-x: auto;
+}
+.jp-RenderedMarkdown pre code { background: transparent; border: none; padding: 0; font-size: .9em; }
+.jp-RenderedMarkdown ul,
+.jp-RenderedMarkdown ol { margin: 0 0 .85em; padding-left: 1.5em; }
+.jp-RenderedMarkdown li { margin: .22em 0; }
+.jp-RenderedMarkdown li::marker {
+  color: color-mix(in oklch, var(--jp-brand-color1) 65%, var(--jp-ui-font-color2));
+}
+.jp-RenderedMarkdown blockquote {
+  margin: 0 0 .85em; padding: .3em 1em;
+  color: var(--jp-content-font-color0);
+  border-left: 3px solid color-mix(in oklch, var(--jp-brand-color1) 55%, transparent);
+  background: color-mix(in oklch, var(--jp-brand-color1) 4%, transparent);
+  border-radius: 0 6px 6px 0;
+}
+.jp-RenderedMarkdown hr {
+  border: none; height: 1px;
+  background: color-mix(in oklch, var(--jp-border-color2) 70%, transparent);
+  margin: 1.6em 0;
+}
+
+/* ---------------------------------------------------------------------------
+   8. Rendered HTML / generic rich output polish.
+   --------------------------------------------------------------------------- */
+.jp-RenderedHTMLCommon { color: var(--jp-content-font-color1); line-height: 1.6; }
+.jp-RenderedHTMLCommon > img,
+.jp-OutputArea-output .jp-RenderedHTMLCommon > img {
+  max-width: 100%; height: auto; border-radius: calc(var(--nx-radius) - 2px);
+}
+
+/* ---------------------------------------------------------------------------
+   9. DataFrame / tables (table.dataframe) - premium, rounded, no zebra.
+   --------------------------------------------------------------------------- */
+.jp-OutputArea-output table.dataframe,
+.jp-RenderedHTMLCommon table.dataframe {
+  border-collapse: separate; border-spacing: 0;
+  width: auto; max-width: 100%; margin: 6px 0;
+  border: 1px solid var(--nx-hairline);
+  border-radius: var(--nx-radius);
+  overflow: hidden;
+  font-family: var(--jp-ui-font-family); font-size: .86em;
+  color: var(--jp-content-font-color1);
+  background: var(--nx-surface);
+}
+table.dataframe,
+table.dataframe th,
+table.dataframe td { border-style: none; }
+
+/* Kill JupyterLab's default row striping (it shows through transparent cells). */
+table.dataframe tbody tr,
+table.dataframe tbody tr:nth-child(2n),
+table.dataframe tbody tr:nth-child(2n+1) { background: transparent; }
+
+table.dataframe thead th {
+  background: color-mix(in oklch, var(--jp-layout-color2) 55%, transparent);
+  color: var(--jp-ui-font-color1); font-weight: 600;
+  text-align: right; padding: 8px 14px;
+  border-bottom: 1px solid var(--nx-hairline);
+  white-space: nowrap;
+}
+table.dataframe thead th:first-child,
+table.dataframe thead th:empty {
+  text-align: left;
+  background: color-mix(in oklch, var(--jp-layout-color2) 60%, transparent);
+}
+table.dataframe tbody td {
+  padding: 7px 14px; text-align: right; background: transparent;
+  border-top: 1px solid color-mix(in oklch, var(--jp-border-color2) 40%, transparent);
+  white-space: nowrap;
+}
+table.dataframe tbody tr:first-child td { border-top: none; }
+table.dataframe tbody th {
+  padding: 7px 14px; text-align: left; font-weight: 600;
+  color: var(--jp-ui-font-color2);
+  background: color-mix(in oklch, var(--jp-layout-color2) 22%, var(--nx-surface));
+  border-top: 1px solid color-mix(in oklch, var(--jp-border-color2) 40%, transparent);
+  white-space: nowrap;
+}
+table.dataframe tbody tr:first-child th { border-top: none; }
+table.dataframe tbody tr { transition: background-color .12s ease; }
+table.dataframe tbody tr:hover td,
+table.dataframe tbody tr:hover th {
+  background: color-mix(in oklch, var(--jp-brand-color1) 6%, transparent);
+}
+
+/* ---------------------------------------------------------------------------
+   10. Scrollbars - subtle, theme-colored.
+   --------------------------------------------------------------------------- */
+.jp-Notebook,
+.jp-WindowedPanel-outer,
+.cm-scroller,
+.jp-OutputArea-output,
+.jp-RenderedHTMLCommon {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--jp-ui-font-color3) 45%, transparent) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--jp-ui-font-color3) 38%, transparent);
+  border-radius: 8px; border: 2px solid transparent; background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--jp-ui-font-color2) 50%, transparent);
+  background-clip: padding-box;
+}

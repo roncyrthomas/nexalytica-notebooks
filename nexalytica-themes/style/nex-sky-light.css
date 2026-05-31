@@ -1,0 +1,38 @@
+/* Nexalytica Sky Light — sky-blue on warm white (globals.css .theme-sky)
+   Base theme is loaded at runtime by the plugin; this file only overrides
+   the brand palette. */
+@import url('_shared.css');
+
+:root {
+  --nex-primary: oklch(0.6723 0.1606 244.9955);
+  --nex-font-sans: 'Inter', system-ui, sans-serif;
+  --nex-font-mono: 'Menlo', ui-monospace, monospace;
+  --nex-radius: 14px;
+
+  --jp-layout-color0: oklch(1 0 0);
+  --jp-layout-color1: oklch(0.9923 0.0042 236.4949);
+  --jp-layout-color2: oklch(0.9388 0.0342 235.8601);
+  --jp-layout-color3: oklch(0.9317 0.0118 231.6594);
+
+  --jp-ui-font-color0: oklch(0.1884 0.0128 248.5103);
+  --jp-ui-font-color1: oklch(0.1884 0.0128 248.5103);
+  --jp-ui-font-color2: oklch(0.5596 0.0934 249.8189);
+  --jp-ui-font-color3: oklch(0.5596 0.0934 249.8189);
+  --jp-content-font-color0: oklch(0.1884 0.0128 248.5103);
+  --jp-content-font-color1: oklch(0.1884 0.0128 248.5103);
+
+  --jp-border-color0: oklch(0.9317 0.0118 231.6594);
+  --jp-border-color1: oklch(0.9317 0.0118 231.6594);
+  --jp-border-color2: oklch(0.9388 0.0342 235.8601);
+
+  --jp-brand-color0: oklch(0.6723 0.1606 244.9955);
+  --jp-brand-color1: oklch(0.6723 0.1606 244.9955);
+  --jp-brand-color2: oklch(0.9388 0.0342 235.8601);
+  --jp-brand-color3: oklch(0.9388 0.0342 235.8601);
+  --jp-accent-color1: oklch(0.6723 0.1606 244.9955);
+
+  --jp-cell-editor-background: oklch(1 0 0);
+  --jp-cell-editor-border-color: oklch(0.9317 0.0118 231.6594);
+  --jp-input-active-border-color: oklch(0.6723 0.1606 244.9955);
+  --jp-toolbar-background: oklch(1 0 0);
+}

@@ -1,0 +1,38 @@
+/* Nexalytica Default Dark — lime/chartreuse on deep navy (globals.css .dark)
+   Base theme is loaded at runtime by the plugin; this file only overrides
+   the brand palette. */
+@import url('_shared.css');
+
+:root {
+  --nex-primary: oklch(0.8871 0.2122 128.5041);
+  --nex-font-sans: 'Inter', system-ui, sans-serif;
+  --nex-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --nex-radius: 10px;
+
+  --jp-layout-color0: oklch(0.1288 0.0406 264.6952);
+  --jp-layout-color1: oklch(0.2077 0.0398 265.7549);
+  --jp-layout-color2: oklch(0.2795 0.0368 260.0310);
+  --jp-layout-color3: oklch(0.2795 0.0368 260.0310);
+
+  --jp-ui-font-color0: oklch(0.9842 0.0034 247.8575);
+  --jp-ui-font-color1: oklch(0.9842 0.0034 247.8575);
+  --jp-ui-font-color2: oklch(0.7107 0.0351 256.7878);
+  --jp-ui-font-color3: oklch(0.5544 0.0407 257.4166);
+  --jp-content-font-color0: oklch(0.9842 0.0034 247.8575);
+  --jp-content-font-color1: oklch(0.9842 0.0034 247.8575);
+
+  --jp-border-color0: oklch(0.2795 0.0368 260.0310);
+  --jp-border-color1: oklch(0.2795 0.0368 260.0310);
+  --jp-border-color2: oklch(0.2795 0.0368 260.0310);
+
+  --jp-brand-color0: oklch(0.7227 0.1920 149.5793);
+  --jp-brand-color1: oklch(0.8871 0.2122 128.5041);
+  --jp-brand-color2: oklch(0.7227 0.1920 149.5793);
+  --jp-brand-color3: oklch(0.7227 0.1920 149.5793);
+  --jp-accent-color1: oklch(0.8871 0.2122 128.5041);
+
+  --jp-cell-editor-background: oklch(0.2077 0.0398 265.7549);
+  --jp-cell-editor-border-color: oklch(0.2795 0.0368 260.0310);
+  --jp-input-active-border-color: oklch(0.8871 0.2122 128.5041);
+  --jp-toolbar-background: oklch(0.1288 0.0406 264.6952);
+}

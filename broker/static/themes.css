@@ -1,0 +1,109 @@
+/* Nexalytica page themes — palettes lifted from Platform/frontend globals.css.
+   The shell reads these vars; switching [data-nx] on <html> restyles the whole
+   page. Each id maps 1:1 to a notebook theme name (see app.js THEMES). */
+
+:root,
+html[data-nx="default-dark"] {
+  --bg: oklch(0.1288 0.0406 264.6952);
+  --fg: oklch(0.9842 0.0034 247.8575);
+  --card: oklch(0.2077 0.0398 265.7549);
+  --primary: oklch(0.8871 0.2122 128.5041);
+  --primary-fg: oklch(0 0 0);
+  --border: oklch(0.2795 0.0368 260.0310);
+  --muted: oklch(0.2795 0.0368 260.0310);
+  --muted-fg: oklch(0.7107 0.0351 256.7878);
+  --sidebar: oklch(0.1090 0.0350 264.0000);
+  --radius: 1rem;
+  --font: 'Inter', system-ui, sans-serif;
+}
+html[data-nx="default-light"] {
+  --bg: oklch(0.9892 0.0054 117.9205);
+  --fg: oklch(0.2077 0.0398 265.7549);
+  --card: oklch(1 0 0);
+  --primary: oklch(0.8871 0.2122 128.5041);
+  --primary-fg: oklch(0 0 0);
+  --border: oklch(0.9288 0.0126 255.5078);
+  --muted: oklch(0.9683 0.0069 247.8956);
+  --muted-fg: oklch(0.5544 0.0407 257.4166);
+  --sidebar: oklch(1 0 0);
+  --radius: 1rem;
+  --font: 'Inter', system-ui, sans-serif;
+}
+html[data-nx="violet-dark"] {
+  --bg: oklch(0.1091 0.0091 301.6956);
+  --fg: oklch(0.9838 0.0035 247.8583);
+  --card: oklch(0.1376 0.0118 301.0607);
+  --primary: oklch(0.6083 0.2172 297.1153);
+  --primary-fg: oklch(0.1091 0.0091 301.6956);
+  --border: oklch(0.2505 0.0293 299.5707);
+  --muted: oklch(0.2217 0.0242 299.7054);
+  --muted-fg: oklch(0.7497 0.0224 301.0128);
+  --sidebar: oklch(0.1249 0.0104 301.6956);
+  --radius: 1rem;
+  --font: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+html[data-nx="violet-light"] {
+  --bg: oklch(0.9838 0.0035 247.8583);
+  --fg: oklch(0.1284 0.0267 261.5937);
+  --card: oklch(1 0 0);
+  --primary: oklch(0.4865 0.2423 291.8661);
+  --primary-fg: oklch(0.9838 0.0035 247.8583);
+  --border: oklch(0.9278 0.0058 264.5314);
+  --muted: oklch(0.9679 0.0027 264.5424);
+  --muted-fg: oklch(0.5503 0.0235 264.3620);
+  --sidebar: oklch(1 0 0);
+  --radius: 1rem;
+  --font: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+html[data-nx="sky-dark"] {
+  --bg: oklch(0.1453 0.0260 230.7926);
+  --fg: oklch(0.9328 0.0025 228.7857);
+  --card: oklch(0.1602 0.0289 236.3741);
+  --primary: oklch(0.6692 0.1607 245.0110);
+  --primary-fg: oklch(1 0 0);
+  --border: oklch(0.2122 0.0370 248.5362);
+  --muted: oklch(0.2094 0.0450 243.1823);
+  --muted-fg: oklch(0.5637 0.0078 247.9662);
+  --sidebar: oklch(0.1605 0.0261 235.8460);
+  --radius: 1.4rem;
+  --font: 'Inter', system-ui, sans-serif;
+}
+html[data-nx="sky-light"] {
+  --bg: oklch(0.9923 0.0042 236.4949);
+  --fg: oklch(0.1884 0.0128 248.5103);
+  --card: oklch(1 0 0);
+  --primary: oklch(0.6723 0.1606 244.9955);
+  --primary-fg: oklch(1 0 0);
+  --border: oklch(0.9317 0.0118 231.6594);
+  --muted: oklch(0.9771 0.0125 236.6197);
+  --muted-fg: oklch(0.5596 0.0934 249.8189);
+  --sidebar: oklch(1 0 0);
+  --radius: 1.4rem;
+  --font: 'Inter', system-ui, sans-serif;
+}
+html[data-nx="monochrome-dark"] {
+  --bg: oklch(0.1822 0 0);
+  --fg: oklch(0.9288 0.0126 255.5078);
+  --card: oklch(0.2046 0 0);
+  --primary: oklch(0.5568 0.1355 155.8120);
+  --primary-fg: oklch(0.9213 0.0135 167.1556);
+  --border: oklch(0.2809 0 0);
+  --muted: oklch(0.2393 0 0);
+  --muted-fg: oklch(0.7122 0 0);
+  --sidebar: oklch(0.1822 0 0);
+  --radius: 0.5rem;
+  --font: 'Outfit', system-ui, sans-serif;
+}
+html[data-nx="monochrome-light"] {
+  --bg: oklch(0.9911 0 0);
+  --fg: oklch(0.2046 0 0);
+  --card: oklch(0.9940 0 0);
+  --primary: oklch(0.5568 0.1355 155.8120);
+  --primary-fg: oklch(1 0 0);
+  --border: oklch(0.9037 0 0);
+  --muted: oklch(0.9461 0 0);
+  --muted-fg: oklch(0.4386 0 0);
+  --sidebar: oklch(0.9911 0 0);
+  --radius: 0.5rem;
+  --font: 'Outfit', system-ui, sans-serif;
+}

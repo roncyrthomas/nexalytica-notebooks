@@ -1,0 +1,36 @@
+/* Nexalytica Violet Light — purple on cool white (globals.css .theme-violet) */
+@import url('_shared.css');
+
+:root {
+  --nex-primary: oklch(0.4865 0.2423 291.8661);
+  --nex-font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --nex-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --nex-radius: 10px;
+
+  --jp-layout-color0: oklch(1 0 0);
+  --jp-layout-color1: oklch(0.9838 0.0035 247.8583);
+  --jp-layout-color2: oklch(0.9546 0.0227 303.2883);
+  --jp-layout-color3: oklch(0.9278 0.0058 264.5314);
+
+  --jp-ui-font-color0: oklch(0.1284 0.0267 261.5937);
+  --jp-ui-font-color1: oklch(0.1284 0.0267 261.5937);
+  --jp-ui-font-color2: oklch(0.5503 0.0235 264.3620);
+  --jp-ui-font-color3: oklch(0.5503 0.0235 264.3620);
+  --jp-content-font-color0: oklch(0.1284 0.0267 261.5937);
+  --jp-content-font-color1: oklch(0.1284 0.0267 261.5937);
+
+  --jp-border-color0: oklch(0.9278 0.0058 264.5314);
+  --jp-border-color1: oklch(0.9278 0.0058 264.5314);
+  --jp-border-color2: oklch(0.9546 0.0227 303.2883);
+
+  --jp-brand-color0: oklch(0.4865 0.2423 291.8661);
+  --jp-brand-color1: oklch(0.4865 0.2423 291.8661);
+  --jp-brand-color2: oklch(0.9546 0.0227 303.2883);
+  --jp-brand-color3: oklch(0.9546 0.0227 303.2883);
+  --jp-accent-color1: oklch(0.4865 0.2423 291.8661);
+
+  --jp-cell-editor-background: oklch(1 0 0);
+  --jp-cell-editor-border-color: oklch(0.9278 0.0058 264.5314);
+  --jp-input-active-border-color: oklch(0.4865 0.2423 291.8661);
+  --jp-toolbar-background: oklch(1 0 0);
+}

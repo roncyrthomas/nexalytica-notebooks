@@ -1,0 +1,36 @@
+/* Nexalytica Monochrome Dark — green on charcoal (globals.css .theme-monochrome.dark) */
+@import url('_shared.css');
+
+:root {
+  --nex-primary: oklch(0.5568 0.1355 155.8120);
+  --nex-font-sans: 'Outfit', system-ui, sans-serif;
+  --nex-font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  --nex-radius: 8px;
+
+  --jp-layout-color0: oklch(0.1822 0 0);
+  --jp-layout-color1: oklch(0.2046 0 0);
+  --jp-layout-color2: oklch(0.2393 0 0);
+  --jp-layout-color3: oklch(0.2809 0 0);
+
+  --jp-ui-font-color0: oklch(0.9288 0.0126 255.5078);
+  --jp-ui-font-color1: oklch(0.9288 0.0126 255.5078);
+  --jp-ui-font-color2: oklch(0.7122 0 0);
+  --jp-ui-font-color3: oklch(0.5452 0 0);
+  --jp-content-font-color0: oklch(0.9288 0.0126 255.5078);
+  --jp-content-font-color1: oklch(0.9288 0.0126 255.5078);
+
+  --jp-border-color0: oklch(0.2809 0 0);
+  --jp-border-color1: oklch(0.2809 0 0);
+  --jp-border-color2: oklch(0.2393 0 0);
+
+  --jp-brand-color0: oklch(0.8003 0.1821 151.7110);
+  --jp-brand-color1: oklch(0.5568 0.1355 155.8120);
+  --jp-brand-color2: oklch(0.8003 0.1821 151.7110);
+  --jp-brand-color3: oklch(0.8003 0.1821 151.7110);
+  --jp-accent-color1: oklch(0.5568 0.1355 155.8120);
+
+  --jp-cell-editor-background: oklch(0.2046 0 0);
+  --jp-cell-editor-border-color: oklch(0.2809 0 0);
+  --jp-input-active-border-color: oklch(0.5568 0.1355 155.8120);
+  --jp-toolbar-background: oklch(0.1822 0 0);
+}

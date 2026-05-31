@@ -1,0 +1,17 @@
+# Python envs
+.venv/
+**/.venv/
+__pycache__/
+*.pyc
+
+# runtime data / state
+broker/data/
+nexalytica-themes/node_modules/
+nexalytica-themes/.yarn/
+nexalytica-themes/lib/
+nexalytica-themes/nexalytica_themes/
+
+# screenshots / scratch
+_shot/*.png
+_mounttest/
+data/

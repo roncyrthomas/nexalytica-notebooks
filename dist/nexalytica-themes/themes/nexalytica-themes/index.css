@@ -1,0 +1,3 @@
+/* themePath entry point. Defaults to the Default Dark palette; the plugin
+   registers every theme explicitly via the ThemeManager. */
+@import url('nex-default-dark.css');

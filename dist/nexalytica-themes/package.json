@@ -1,0 +1,42 @@
+{
+  "name": "nexalytica-themes",
+  "version": "0.1.0",
+  "description": "Nexalytica brand themes for JupyterLab / Notebook 7",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "theme"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*.{js,d.ts}",
+    "style/**/*.css"
+  ],
+  "scripts": {
+    "build": "jlpm build:lib && jlpm build:labextension:dev",
+    "build:lib": "tsc",
+    "build:labextension": "jupyter labextension build .",
+    "build:labextension:dev": "jupyter labextension build --development True .",
+    "clean": "rm -rf lib nexalytica_themes/labextension tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@jupyterlab/application": "^4.5.0",
+    "@jupyterlab/apputils": "^4.5.0"
+  },
+  "devDependencies": {
+    "@jupyterlab/builder": "^4.5.0",
+    "typescript": "~5.5.4"
+  },
+  "jupyterlab": {
+    "extension": true,
+    "themePath": "style/index.css",
+    "outputDir": "nexalytica_themes/labextension",
+    "_build": {
+      "load": "static/remoteEntry.cd65ecc9f88485c3d29d.js",
+      "extension": "./extension"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+/* Shared, palette-neutral polish for all Nexalytica themes.
+   Reads --nex-* and --jp-brand-* set by each theme file, so it adapts
+   automatically to whichever brand palette is active. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --jp-ui-font-family: var(--nex-font-sans, 'Inter', system-ui, sans-serif);
+  --jp-content-font-family: var(--nex-font-sans, 'Inter', system-ui, sans-serif);
+  --jp-code-font-family: var(--nex-font-mono, ui-monospace, monospace);
+  --jp-border-radius: var(--nex-radius, 10px);
+}
+
+body {
+  letter-spacing: -0.01em;
+}
+
+/* Prompt counters in the brand color */
+.jp-InputPrompt,
+.jp-OutputPrompt {
+  color: var(--jp-brand-color0);
+}
+
+/* Active cell collapser bar in the brand color */
+.jp-Notebook .jp-Cell.jp-mod-active .jp-Collapser {
+  background: var(--nex-primary);
+}
+
+/* Rounder editors / outputs */
+.jp-Cell .jp-InputArea-editor,
+.jp-OutputArea-output {
+  border-radius: var(--jp-border-radius);
+}
+
+/* Primary dialog buttons adopt the brand fill */
+.jp-Dialog-button.jp-mod-accept,
+button.jp-mod-styled.jp-mod-accept {
+  background: var(--nex-primary);
+  border-radius: 8px;
+  font-weight: 600;
+}

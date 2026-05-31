@@ -1,0 +1,22 @@
+{
+  "@jupyterlab/apputils-extension:themes": {
+    "theme": "Nexalytica Default Dark"
+  },
+  "@jupyterlab/notebook-extension:panel": {
+    "toolbar": [
+      {
+        "name": "run-all",
+        "command": "notebook:run-all-cells",
+        "label": "Run All",
+        "rank": 8.5
+      },
+      {
+        "name": "export",
+        "command": "notebook:export-to-format",
+        "args": { "format": "html", "label": "Export" },
+        "label": "Export",
+        "rank": 99
+      }
+    ]
+  }
+}
