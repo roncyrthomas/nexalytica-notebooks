@@ -44,7 +44,7 @@ function ensureFrame(n) {
 }
 function showActive() {
   for (const f of els.frames.querySelectorAll('iframe')) f.classList.remove('active');
-  const n = find(activeId), running = n && n.status === 'running';
+  const n = find(activeId), running = n && n.running;
   if (running) ensureFrame(n).classList.add('active');
   els.empty.classList.toggle('hidden', !!running);
   render();
@@ -56,7 +56,7 @@ function routeTo(id) {
 
 async function openNotebook(id, { push = true } = {}) {
   const n = find(id); if (!n) return;
-  if (n.status !== 'running') Object.assign(n, await api(`/api/notebooks/${id}/open`, 'POST', { theme: nbThemeName() }));
+  if (!n.running) Object.assign(n, await api(`/api/notebooks/${id}/open`, 'POST', { theme: nbThemeName() }));
   activeId = id; if (push) routeTo(id); showActive();
 }
 async function newNotebook() {
@@ -105,7 +105,7 @@ function render() {
   for (const n of notebooks) {
     if (q && !n.name.toLowerCase().includes(q)) continue;
     const row = document.createElement('div');
-    row.className = `item ${n.status === 'running' ? 'running' : ''} ${n.id === activeId ? 'active' : ''}`;
+    row.className = `item ${n.running ? 'running' : ''} ${n.id === activeId ? 'active' : ''}`;
     row.onclick = e => { if (!e.target.closest('.kebab')) openNotebook(n.id).catch(err => alert(err.message)); };
     row.innerHTML = `<span class="dot"></span><span class="name">${escapeHtml(n.name)}</span><button class="kebab" title="More">&#8942;</button>`;
     row.querySelector('.kebab').onclick = e => { e.stopPropagation(); const r = e.target.getBoundingClientRect(); openMenu(n.id, r.right - 4, r.bottom + 4); };
@@ -118,7 +118,7 @@ function initThemes() {
   applyTheme(themeId());
   els.theme.onchange = async e => {
     applyTheme(e.target.value);
-    for (const n of notebooks.filter(x => x.status === 'running')) {
+    for (const n of notebooks.filter(x => x.running)) {
       try { await api(`/api/notebooks/${n.id}/open`, 'POST', { theme: nbThemeName() }); } catch {}
       const f = document.getElementById(`f-${n.id}`); if (f) f.src = n.url;
     }
