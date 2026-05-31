@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nexalytica Notebooks</title>
+  <title>Notebook</title>
   <link rel="stylesheet" href="/static/themes.css" />
   <link rel="stylesheet" href="/static/app.css" />
 </head>
@@ -11,38 +11,33 @@
   <div class="app">
     <aside class="sidebar">
       <div class="side-head">
-        <span class="brand-logo"></span>
-        <span class="brand-name">Notebook</span>
+        <span class="brand-logo"></span><span class="brand-name">Notebook</span>
       </div>
       <button class="new-btn" id="new-btn">&#43;&nbsp; New notebook</button>
-      <div class="search">
-        <input id="search" type="text" placeholder="Search notebooks&hellip;" autocomplete="off" />
-      </div>
+      <div class="search"><input id="search" type="text" placeholder="Search notebooks&hellip;" autocomplete="off" /></div>
       <div class="section-label">Notebooks</div>
       <div class="list" id="list"></div>
       <div class="side-foot">
         <label for="theme">Theme</label>
         <select class="theme-select" id="theme"></select>
+        <div class="acct"><span class="email" id="email">&hellip;</span><button class="logout" id="logout">Log out</button></div>
       </div>
     </aside>
-
     <main class="main">
       <div class="frames" id="frames"></div>
       <div class="empty" id="empty">
         <div class="big">No notebook open</div>
-        <div class="sub">Create or open a notebook from the explorer to start an isolated, instant session.</div>
+        <div class="sub">Create or open a notebook from the sidebar to start an isolated, instant session.</div>
       </div>
     </main>
   </div>
-
   <div class="ctx-menu" id="ctx-menu" hidden>
     <button data-act="open">Open</button>
     <button data-act="rename">Rename</button>
-    <button data-act="duplicate">Duplicate</button>
+    <button data-act="close">Stop session</button>
     <div class="sep"></div>
     <button data-act="delete" class="danger">Delete</button>
   </div>
-
   <script src="/static/app.js"></script>
 </body>
 </html>

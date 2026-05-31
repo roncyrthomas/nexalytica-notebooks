@@ -76,7 +76,15 @@ def _set_cookie(resp, uid: str):
 def index(request: Request):
     if not _uid(request):
         return RedirectResponse("/login", status_code=302)
-    return FileResponse(os.path.join(STATIC_DIR, "app.html"))
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+
+
+@app.get("/n/{uuid}")
+def shell_for_notebook(request: Request, uuid: str):
+    # Refresh-safe per-notebook URL; the shell reads the uuid and opens it.
+    if not _uid(request):
+        return RedirectResponse("/login", status_code=302)
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
 
 @app.get("/login")
