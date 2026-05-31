@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" data-nx="default-dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Create account &middot; Notebook</title>
+  <link rel="stylesheet" href="/static/themes.css" />
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <form class="auth-card" id="form">
+      <div class="auth-brand"><span class="brand-logo"></span><span class="brand-name">Notebook</span></div>
+      <h1>Create your account</h1>
+      <p class="sub">Spin up isolated, instant notebooks.</p>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="new-password" minlength="6" required />
+      </div>
+      <button class="btn-primary" type="submit">Create account</button>
+      <div class="auth-err" id="err"></div>
+      <div class="auth-alt">Already have an account? <a href="/login">Sign in</a></div>
+    </form>
+  </div>
+  <script>
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('err'); err.textContent = '';
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+          })
+        });
+        if (res.ok) { location.href = '/'; return; }
+        const d = await res.json().catch(() => ({}));
+        err.textContent = d.detail || 'Could not create account';
+      } catch { err.textContent = 'Network error'; }
+    });
+  </script>
+</body>
+</html>

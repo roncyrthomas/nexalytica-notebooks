@@ -1,13 +1,9 @@
-"""Docker-backed notebook session manager.
+"""Per-notebook Docker runtime for the multi-user / no-iframe variation.
 
-Each "notebook" is a persistent Docker volume + a transient container:
-  * Compute is ephemeral  -> the container is created on open, removed on close.
-  * Files persist         -> the volume (mounted at ~/work) survives close.
-  * Opens are fast        -> a small warm pool of pre-started containers.
-
-A small JSON registry persists notebook metadata (id, name, theme, volume) so
-the explorer list survives a broker restart; reopening starts a fresh container
-on the saved volume.
+Each notebook runs its own container with Jupyter base_url = /nb/<uuid>/ so the
+broker can reverse-proxy it under that clean path (HTTP + kernel WebSocket).
+Compute is ephemeral (container created on open, removed on close); files
+persist in the per-notebook Docker volume.
 """
 import json
 import os
@@ -20,20 +16,9 @@ import urllib.request
 import docker
 
 IMAGE = os.environ.get("NEX_IMAGE", "nexalytica-notebook")
-POOL_SIZE = int(os.environ.get("NEX_POOL_SIZE", "2"))
 NB_PORT = 8888
 LABEL = {"nexalytica.broker": "1"}
-NOTEBOOK_PATH = "/notebooks/work/Welcome.ipynb"
 THEME_PLUGIN = "@jupyterlab/apputils-extension:themes"
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-REGISTRY_PATH = os.path.join(DATA_DIR, "registry.json")
-
-VALID_THEMES = {
-    "Nexalytica Default Dark", "Nexalytica Default Light",
-    "Nexalytica Violet Dark", "Nexalytica Violet Light",
-    "Nexalytica Sky Dark", "Nexalytica Sky Light",
-    "Nexalytica Monochrome Dark", "Nexalytica Monochrome Light",
-}
 
 
 def _free_port():
@@ -44,50 +29,25 @@ def _free_port():
     return port
 
 
+def base_url(uuid: str) -> str:
+    return f"/nb/{uuid}/"
+
+
 class NotebookManager:
     def __init__(self):
         self.client = docker.from_env()
-        self.sessions = {}          # sid -> session dict
-        self.pool = []              # ready {container, volume, port, token}
+        self.runtime = {}             # uuid -> {container, port, token, volume}
         self.lock = threading.RLock()
-        os.makedirs(DATA_DIR, exist_ok=True)
-        self._load_registry()
-        threading.Thread(target=self._fill_pool, daemon=True).start()
 
-    # ----- persistence -------------------------------------------------------
-    def _load_registry(self):
-        try:
-            with open(REGISTRY_PATH, encoding="utf-8") as f:
-                rows = json.load(f)
-        except (OSError, ValueError):
-            rows = []
-        for r in rows:
-            self.sessions[r["id"]] = {
-                "id": r["id"], "name": r["name"], "theme": r.get("theme", "Nexalytica Default Dark"),
-                "volume": r["volume"], "status": "stopped", "url": None,
-                "container": None, "port": None, "token": None,
-            }
-
-    def _save_registry(self):
-        rows = [{"id": s["id"], "name": s["name"], "theme": s["theme"], "volume": s["volume"]}
-                for s in self.sessions.values()]
-        tmp = REGISTRY_PATH + ".tmp"
-        with open(tmp, "w", encoding="utf-8") as f:
-            json.dump(rows, f, indent=2)
-        os.replace(tmp, REGISTRY_PATH)
+    # ----- volumes -----------------------------------------------------------
+    def new_volume(self) -> str:
+        name = f"nex-{secrets.token_hex(6)}"
+        self.client.volumes.create(name=name, labels=LABEL)
+        return name
 
     # ----- container lifecycle ----------------------------------------------
-    def _start_container(self, volume, token, port):
-        return self.client.containers.run(
-            IMAGE, detach=True,
-            environment={"JUPYTER_TOKEN": token},
-            ports={f"{NB_PORT}/tcp": port},
-            volumes={volume: {"bind": "/home/jovyan/work", "mode": "rw"}},
-            labels=LABEL,
-        )
-
-    def _wait_ready(self, port, token, timeout=60):
-        url = f"http://localhost:{port}/api?token={token}"
+    def _wait_ready(self, port, token, uuid, timeout=60):
+        url = f"http://localhost:{port}{base_url(uuid)}api?token={token}"
         deadline = time.time() + timeout
         while time.time() < deadline:
             try:
@@ -98,34 +58,78 @@ class NotebookManager:
                 time.sleep(0.5)
         return False
 
-    def _warm_one(self):
-        volume = f"nex-{secrets.token_hex(6)}"
-        self.client.volumes.create(name=volume, labels=LABEL)
+    def ensure_running(self, uuid: str, volume: str, theme: str) -> dict:
+        """Start the notebook's container if needed; return {port, token}."""
+        with self.lock:
+            rt = self.runtime.get(uuid)
+            if rt is not None:
+                return {"port": rt["port"], "token": rt["token"]}
         token = secrets.token_hex(16)
-        port = _free_port()
-        container = self._start_container(volume, token, port)
-        if not self._wait_ready(port, token):
-            raise RuntimeError("notebook container did not become ready")
-        return {"container": container, "volume": volume, "port": port, "token": token}
-
-    def _fill_pool(self):
-        while True:
-            with self.lock:
-                need = POOL_SIZE - len(self.pool)
-            if need <= 0:
-                return
+        container = self.client.containers.run(
+            IMAGE, detach=True,
+            # base_url so the broker can reverse-proxy under /nb/<uuid>/;
+            # allow_origin + disable_check_xsrf so cross-origin POSTs from the
+            # proxied browser (Origin = broker host) are accepted. The broker is
+            # the sole client and already enforces auth + per-user ownership.
+            command=["start-notebook.py",
+                     f"--ServerApp.base_url={base_url(uuid)}",
+                     "--ServerApp.allow_origin=*",
+                     "--ServerApp.disable_check_xsrf=True"],
+            environment={"JUPYTER_TOKEN": token},
+            ports={f"{NB_PORT}/tcp": None},   # Docker picks a free host port (no race)
+            volumes={volume: {"bind": "/home/jovyan/work", "mode": "rw"}},
+            labels=LABEL,
+        )
+        container.reload()
+        binding = (container.ports or {}).get(f"{NB_PORT}/tcp")
+        if not binding:
             try:
-                ready = self._warm_one()
+                container.remove(force=True)
             except Exception:
-                return
-            with self.lock:
-                self.pool.append(ready)
+                pass
+            raise RuntimeError("no host port assigned")
+        port = int(binding[0]["HostPort"])
+        if not self._wait_ready(port, token, uuid):
+            try:
+                container.remove(force=True)
+            except Exception:
+                pass
+            raise RuntimeError("notebook container did not become ready")
+        self._set_theme(port, token, uuid, theme)
+        with self.lock:
+            self.runtime[uuid] = {"container": container, "port": port,
+                                  "token": token, "volume": volume}
+        return {"port": port, "token": token}
 
-    def _set_theme(self, port, token, theme):
-        if theme not in VALID_THEMES:
-            return
+    def target(self, uuid: str):
+        """Return {port, token} if the notebook is running, else None."""
+        with self.lock:
+            rt = self.runtime.get(uuid)
+        return {"port": rt["port"], "token": rt["token"]} if rt else None
+
+    def is_running(self, uuid: str) -> bool:
+        with self.lock:
+            return uuid in self.runtime
+
+    def stop(self, uuid: str):
+        with self.lock:
+            rt = self.runtime.pop(uuid, None)
+        if rt and rt.get("container") is not None:
+            try:
+                rt["container"].remove(force=True)
+            except Exception:
+                pass
+
+    def remove_volume(self, volume: str):
+        try:
+            self.client.volumes.get(volume).remove(force=True)
+        except Exception:
+            pass
+
+    # ----- theme sync --------------------------------------------------------
+    def _set_theme(self, port, token, uuid, theme):
         body = json.dumps({"raw": json.dumps({"theme": theme})}).encode()
-        url = f"http://localhost:{port}/lab/api/settings/{THEME_PLUGIN}"
+        url = f"http://localhost:{port}{base_url(uuid)}lab/api/settings/{THEME_PLUGIN}"
         req = urllib.request.Request(url, data=body, method="PUT")
         req.add_header("Authorization", f"token {token}")
         req.add_header("Content-Type", "application/json")
@@ -134,128 +138,19 @@ class NotebookManager:
         except Exception:
             pass
 
-    # ----- public API --------------------------------------------------------
-    def _public(self, s):
-        return {"id": s["id"], "name": s["name"], "theme": s["theme"],
-                "status": s["status"], "url": s.get("url")}
-
-    def _bind_running(self, s, slot, theme):
-        self._set_theme(slot["port"], slot["token"], theme)
-        s.update(container=slot["container"], volume=slot["volume"],
-                 port=slot["port"], token=slot["token"], theme=theme, status="running",
-                 url=f"http://localhost:{slot['port']}{NOTEBOOK_PATH}?token={slot['token']}")
-
-    def create_notebook(self, name, theme):
+    def set_theme(self, uuid: str, theme: str):
         with self.lock:
-            slot = self.pool.pop(0) if self.pool else None
-        if slot is None:
-            slot = self._warm_one()
-        sid = secrets.token_hex(8)
-        session = {"id": sid, "name": name, "theme": theme, "status": "stopped",
-                   "volume": slot["volume"], "container": None}
-        self._bind_running(session, slot, theme)
-        with self.lock:
-            self.sessions[sid] = session
-            self._save_registry()
-        threading.Thread(target=self._fill_pool, daemon=True).start()
-        return self._public(session)
-
-    def open_notebook(self, sid, theme):
-        with self.lock:
-            s = self.sessions.get(sid)
-        if not s:
-            raise KeyError(sid)
-        if s["status"] == "running":
-            self._set_theme(s["port"], s["token"], theme)
-            s["theme"] = theme
-        else:
-            token = secrets.token_hex(16)
-            port = _free_port()
-            container = self._start_container(s["volume"], token, port)
-            if not self._wait_ready(port, token):
-                raise RuntimeError("notebook container did not become ready")
-            self._bind_running(s, {"container": container, "volume": s["volume"],
-                                   "port": port, "token": token}, theme)
-        with self.lock:
-            self._save_registry()
-        return self._public(s)
-
-    def close_notebook(self, sid):
-        with self.lock:
-            s = self.sessions.get(sid)
-        if not s:
-            raise KeyError(sid)
-        c = s.get("container")
-        if c is not None:
-            try:
-                c.remove(force=True)
-            except Exception:
-                pass
-        s.update(container=None, status="stopped", url=None, port=None, token=None)
-        return self._public(s)
-
-    def rename_notebook(self, sid, name):
-        with self.lock:
-            s = self.sessions.get(sid)
-            if not s:
-                raise KeyError(sid)
-            s["name"] = name.strip() or s["name"]
-            self._save_registry()
-            return self._public(s)
-
-    def duplicate_notebook(self, sid):
-        with self.lock:
-            src = self.sessions.get(sid)
-        if not src:
-            raise KeyError(sid)
-        new_vol = f"nex-{secrets.token_hex(6)}"
-        self.client.volumes.create(name=new_vol, labels=LABEL)
-        # copy files from the source volume into the new one (root, then chown)
-        self.client.containers.run(
-            IMAGE, remove=True, user="root",
-            command=["bash", "-lc", "cp -a /from/. /to/ 2>/dev/null; chown -R 1000:100 /to"],
-            volumes={src["volume"]: {"bind": "/from", "mode": "ro"},
-                     new_vol: {"bind": "/to", "mode": "rw"}},
-        )
-        nid = secrets.token_hex(8)
-        session = {"id": nid, "name": f"{src['name']} copy", "theme": src["theme"],
-                   "volume": new_vol, "status": "stopped", "url": None,
-                   "container": None, "port": None, "token": None}
-        with self.lock:
-            self.sessions[nid] = session
-            self._save_registry()
-        return self._public(session)
-
-    def delete_notebook(self, sid):
-        with self.lock:
-            s = self.sessions.pop(sid, None)
-        if not s:
-            raise KeyError(sid)
-        c = s.get("container")
-        if c is not None:
-            try:
-                c.remove(force=True)
-            except Exception:
-                pass
-        try:
-            self.client.volumes.get(s["volume"]).remove(force=True)
-        except Exception:
-            pass
-        with self.lock:
-            self._save_registry()
-        return {"id": sid, "deleted": True}
-
-    def list_notebooks(self):
-        with self.lock:
-            return [self._public(s) for s in self.sessions.values()]
+            rt = self.runtime.get(uuid)
+        if rt:
+            self._set_theme(rt["port"], rt["token"], uuid, theme)
 
     def shutdown(self):
         with self.lock:
-            items = list(self.sessions.values()) + self.pool
-        for it in items:
-            c = it.get("container")
-            if c is not None:
+            items = list(self.runtime.values())
+            self.runtime.clear()
+        for rt in items:
+            if rt.get("container") is not None:
                 try:
-                    c.remove(force=True)
+                    rt["container"].remove(force=True)
                 except Exception:
                     pass

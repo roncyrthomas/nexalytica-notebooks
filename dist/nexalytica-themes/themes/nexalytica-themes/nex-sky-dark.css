@@ -1,5 +1,11 @@
 /* Nexalytica Sky Dark — sky-blue on deep slate-blue (globals.css .theme-sky.dark) */
-@import url('_shared.css');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+:root {
+  --jp-ui-font-family: var(--nex-font-sans, 'Inter', system-ui, sans-serif);
+  --jp-content-font-family: var(--nex-font-sans, 'Inter', system-ui, sans-serif);
+  --jp-code-font-family: var(--nex-font-mono, ui-monospace, monospace);
+  --jp-border-radius: var(--nex-radius, 10px);
+}
 
 :root {
   --nex-primary: oklch(0.6692 0.1607 245.0110);

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" data-nx="default-dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Notebook</title>
+  <link rel="stylesheet" href="/static/themes.css" />
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-logo"></span><span class="brand-name">Notebook</span></div>
+    <div class="search"><input id="search" type="text" placeholder="Search notebooks&hellip;" autocomplete="off" /></div>
+    <div class="spacer"></div>
+    <div class="right">
+      <select class="theme-select" id="theme"></select>
+      <div class="acct"><span class="email" id="email">&hellip;</span>
+        <button class="btn-ghost" id="logout">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="content-head">
+      <h1>Your notebooks</h1>
+      <button class="new-btn" id="new-btn">&#43;&nbsp; New notebook</button>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="empty-state" id="empty" hidden>
+      <div class="big">No notebooks yet</div>
+      <div>Create your first isolated notebook to get started.</div>
+    </div>
+  </main>
+
+  <div class="ctx-menu" id="ctx-menu" hidden>
+    <button data-act="open">Open</button>
+    <button data-act="rename">Rename</button>
+    <button data-act="close">Stop session</button>
+    <div class="sep"></div>
+    <button data-act="delete" class="danger">Delete</button>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
