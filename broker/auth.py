@@ -116,8 +116,9 @@ def read_session(cookie: str | None) -> str | None:
 
 
 # ----- notebooks (metadata; runtime state lives in manager) ------------------
-def create_notebook_row(user_id: str, name: str, theme: str, volume: str) -> dict:
-    nid = secrets.token_hex(8)
+def create_notebook_row(user_id: str, name: str, theme: str, volume: str,
+                        nid: str | None = None) -> dict:
+    nid = nid or secrets.token_hex(8)
     sec = secrets.token_urlsafe(16)
     with _lock, _db() as c:
         c.execute("INSERT INTO notebooks VALUES (?,?,?,?,?,?,?)",

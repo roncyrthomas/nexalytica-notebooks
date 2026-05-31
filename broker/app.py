@@ -149,9 +149,11 @@ def list_notebooks(request: Request):
 @app.post("/api/notebooks")
 async def create_notebook(request: Request, body: CreateBody):
     uid = _require(request)
-    volume = await run_in_threadpool(manager.new_volume)
+    # Claim a pre-warmed container (instant). The notebook id == its uuid.
+    slot = await run_in_threadpool(manager.claim)
     nb = auth.create_notebook_row(uid, body.name.strip() or "Untitled notebook",
-                                  body.theme, volume)
+                                  body.theme, slot["volume"], nid=slot["uuid"])
+    manager.set_theme(slot["uuid"], body.theme)
     return _public(nb)
 
 
