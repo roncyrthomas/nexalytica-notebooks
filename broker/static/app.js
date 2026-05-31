@@ -38,6 +38,25 @@ async function api(path, method = 'GET', body) {
 
 function applyTheme(id) { document.documentElement.setAttribute('data-nx', id); localStorage.setItem('nx-theme', id); els.theme.value = id; }
 
+// Switch a running notebook's theme LIVE by swapping its <link> stylesheets +
+// body attrs (same-origin iframe) — NOT by reloading, which would discard
+// unsaved cell edits. Returns false if the frame isn't reachable yet.
+function applyThemeToFrame(f, id) {
+  try {
+    const doc = f && f.contentDocument;
+    if (!doc || !doc.body) return false;
+    const base = id.endsWith('-dark') ? 'theme-dark-extension' : 'theme-light-extension';
+    const links = [...doc.querySelectorAll('link[rel=stylesheet]')];
+    const baseLink = links.find(l => /theme-(dark|light)-extension/.test(l.href));
+    if (baseLink) baseLink.href = baseLink.href.replace(/theme-(dark|light)-extension/, base);
+    const palLink = links.find(l => /nexalytica-themes\/nex-/.test(l.href));
+    if (palLink) palLink.href = palLink.href.replace(/nex-[a-z-]+\.css/, `nex-${id}.css`);
+    doc.body.setAttribute('data-jp-theme-name', (THEMES.find(t => t.id === id) || THEMES[0]).nb);
+    doc.body.setAttribute('data-jp-theme-light', id.endsWith('-dark') ? 'false' : 'true');
+    return true;
+  } catch { return false; }
+}
+
 function ensureFrame(n) {
   let f = document.getElementById(`f-${n.id}`);
   if (!f) {
@@ -125,10 +144,14 @@ function initThemes() {
   for (const t of THEMES) { const o = document.createElement('option'); o.value = t.id; o.textContent = t.label; els.theme.appendChild(o); }
   applyTheme(themeId());
   els.theme.onchange = async e => {
-    applyTheme(e.target.value);
+    const id = e.target.value;
+    applyTheme(id);
     for (const n of notebooks.filter(x => x.running)) {
+      const f = document.getElementById(`f-${n.id}`);
+      const live = applyThemeToFrame(f, id);          // swap in place, keep content
+      // persist so reloads / new tabs pick up the theme; do NOT reload the iframe
       try { await api(`/api/notebooks/${n.id}/open`, 'POST', { theme: nbThemeName() }); } catch {}
-      const f = document.getElementById(`f-${n.id}`); if (f) f.src = n.url;
+      if (!live && f) f.src = n.url;                   // fallback only if not reachable
     }
   };
 }
