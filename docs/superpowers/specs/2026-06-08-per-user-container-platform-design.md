@@ -229,12 +229,12 @@ Render these mimetypes; ignore others gracefully (show a "[unsupported output]" 
   (`work/<id>.ipynb`). Keep `id, user_id, name, theme, created`.
 
 ### 7.2 Migration of existing data
-This branch is pre-production. Options, decided at plan time:
-- **Preferred:** a one-shot migration that, per user, creates the user volume, copies each
-  existing per-notebook volume's `.ipynb` into `work/<id>.ipynb`, then removes old volumes
-  and containers.
-- **Acceptable fallback (if pre-prod data is disposable):** reset — drop old notebooks/volumes,
-  start clean. Confirm with the team before choosing.
+**Decision: start clean (reset).** Pre-prod data is disposable. On rollout:
+- Drop the old `notebooks` rows and recreate the table with the new schema.
+- Remove all existing broker-labelled containers and per-notebook volumes
+  (`nexalytica.broker=1`), so no orphaned per-notebook artifacts remain.
+- Users keep their accounts; their notebook list starts empty under the new per-user model.
+No copy/migration of old `.ipynb` content is performed.
 
 ---
 
