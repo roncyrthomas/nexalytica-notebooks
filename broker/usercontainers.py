@@ -3,12 +3,15 @@
 Compute is ephemeral; only the user's named volume persists. The Docker layer
 and the clock are injected so all logic here is unit-testable without Docker.
 """
+import logging
 import secrets
 import threading
 import time
 
 import config
 from docker_ops import DockerOps, free_port
+
+log = logging.getLogger(__name__)
 
 
 class UserContainerManager:
@@ -104,14 +107,18 @@ class UserContainerManager:
         self.reap_orphans()
 
     def start_reaper(self):
-        def loop():
-            while not self._stop_evt.wait(config.REAP_INTERVAL):
-                try:
-                    self.reap_once()
-                except Exception:
-                    pass
+        if getattr(self, "_reaper_thread", None) and self._reaper_thread.is_alive():
+            return                              # idempotent: don't leak threads
         self._stop_evt = threading.Event()
-        threading.Thread(target=loop, daemon=True).start()
+        self._reaper_thread = threading.Thread(target=self._reaper_loop, daemon=True)
+        self._reaper_thread.start()
+
+    def _reaper_loop(self):
+        while not self._stop_evt.wait(config.REAP_INTERVAL):
+            try:
+                self.reap_once()
+            except Exception:
+                log.exception("reaper pass failed")   # keep looping, but surface it
 
     def shutdown(self):
         if getattr(self, "_stop_evt", None) is not None:
@@ -119,5 +126,6 @@ class UserContainerManager:
         with self.lock:
             items = list(self.runtime.values())
             self.runtime.clear()
+            self._user_locks.clear()
         for rt in items:
             self.ops.remove_container(rt["container"])
