@@ -91,3 +91,10 @@ class UserContainerManager:
     def reap_idle(self):
         for uid in self.idle_user_ids():
             self.stop(uid)
+
+    def reap_orphans(self):
+        with self.lock:
+            known_ids = {rt["container"].id for rt in self.runtime.values()}
+        for container in self.ops.list_broker_containers():
+            if container.id not in known_ids:
+                self.ops.remove_container(container)

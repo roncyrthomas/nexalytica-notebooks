@@ -92,3 +92,24 @@ def test_reap_idle_stops_expired_only(fake_ops, clock):
 
     assert not mgr.is_running("u1")
     assert mgr.is_running("u2")
+
+
+from unittest.mock import MagicMock
+
+
+def test_reap_orphans_removes_unknown_labelled_containers(fake_ops, clock):
+    mgr = make_mgr(fake_ops, clock)
+    known = mgr.ensure_running("u1", "key1", "nex-vol-u1")  # noqa: F841
+    known_container = mgr.runtime["u1"]["container"]
+
+    orphan = MagicMock()
+    orphan.id = "cid-orphan"
+    fake_ops.list_broker_containers.return_value = [known_container, orphan]
+
+    mgr.reap_orphans()
+
+    # only the orphan is removed; the known container is untouched
+    removed = [c.args[0] for c in fake_ops.remove_container.call_args_list]
+    assert orphan in removed
+    assert known_container not in removed
+    assert mgr.is_running("u1")
