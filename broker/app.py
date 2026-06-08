@@ -16,18 +16,20 @@ from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
 import auth
+import nbfmt
 import proxy
-from manager import NotebookManager
+from usercontainers import UserContainerManager
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
-manager: NotebookManager | None = None
+manager: UserContainerManager | None = None
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     global manager
     auth.init_db()
-    manager = NotebookManager()
+    manager = UserContainerManager()
+    manager.start_reaper()
     yield
     await proxy.aclose()
     manager.shutdown()
@@ -70,6 +72,29 @@ def _require(request: Request) -> str:
 def _set_cookie(resp, uid: str):
     resp.set_cookie(auth.COOKIE_NAME, auth.make_session(uid), httponly=True,
                     samesite="lax", max_age=auth.SESSION_TTL, path="/")
+
+
+# ----- container helpers -----------------------------------------------------
+async def _ensure_user_container(uid: str):
+    u = await run_in_threadpool(auth.get_user_full, uid)
+    if not u:
+        raise HTTPException(401, "not authenticated")
+    await run_in_threadpool(manager.ensure_running, uid,
+                            u["container_key"], u["volume"])
+    manager.touch(uid)
+    return manager.target(uid)
+
+
+def _container_base(uid: str) -> str:
+    u = auth.get_user_full(uid)
+    return f"u/{u['container_key']}"
+
+
+def _sync_ensure(uid: str):
+    u = auth.get_user_full(uid)
+    if u:
+        manager.ensure_running(uid, u["container_key"], u["volume"])
+        manager.touch(uid)
 
 
 # ----- pages -----------------------------------------------------------------
