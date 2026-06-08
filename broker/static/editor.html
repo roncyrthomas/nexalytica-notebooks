@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" data-nx="default-dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Notebook</title>
+  <link rel="stylesheet" href="/static/themes.css" />
+  <link rel="stylesheet" href="/static/editor.css" />
+</head>
+<body>
+  <header class="nb-appbar">
+    <a class="nb-back" href="/" title="Back to notebooks">&#8592;</a>
+    <span class="nb-name" id="nb-name">Notebook</span>
+    <span class="nb-saved" id="nb-saved"></span>
+    <div class="nb-spacer"></div>
+    <span class="nb-kernel" id="nb-kernel"><span class="k-dot" id="k-dot"></span><span id="k-text">starting&hellip;</span></span>
+  </header>
+
+  <div class="nb-toolbar">
+    <button class="nb-btn primary" id="t-run">&#9654; Run</button>
+    <button class="nb-btn" id="t-runall">&#9197; Run all</button>
+    <span class="nb-sep"></span>
+    <button class="nb-btn" id="t-interrupt">&#9632; Interrupt</button>
+    <button class="nb-btn" id="t-restart">&#8635; Restart</button>
+    <span class="nb-sep"></span>
+    <button class="nb-btn" id="t-addcode">&#43; Code</button>
+    <button class="nb-btn" id="t-addmd">&#43; Markdown</button>
+    <div class="nb-spacer"></div>
+    <button class="nb-btn" id="t-save">Save</button>
+  </div>
+
+  <main class="nb-cells" id="cells"></main>
+
+  <script src="/static/nbclient.js"></script>
+  <script src="/static/editor.js"></script>
+</body>
+</html>
