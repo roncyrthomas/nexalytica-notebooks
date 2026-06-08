@@ -66,3 +66,29 @@ def test_touch_updates_last_active(fake_ops, clock):
     mgr.touch("u1")
 
     assert mgr.runtime["u1"]["last_active"] == clock()
+
+
+import config
+
+
+def test_idle_user_ids_lists_only_expired(fake_ops, clock):
+    mgr = make_mgr(fake_ops, clock)
+    mgr.ensure_running("u1", "key1", "nex-vol-u1")
+    clock.advance(config.IDLE_TIMEOUT + 1)
+    mgr.ensure_running("u2", "key2", "nex-vol-u2")   # fresh, not idle
+
+    idle = mgr.idle_user_ids()
+
+    assert idle == ["u1"]
+
+
+def test_reap_idle_stops_expired_only(fake_ops, clock):
+    mgr = make_mgr(fake_ops, clock)
+    mgr.ensure_running("u1", "key1", "nex-vol-u1")
+    clock.advance(config.IDLE_TIMEOUT + 1)
+    mgr.ensure_running("u2", "key2", "nex-vol-u2")
+
+    mgr.reap_idle()
+
+    assert not mgr.is_running("u1")
+    assert mgr.is_running("u2")

@@ -7,6 +7,7 @@ import secrets
 import threading
 import time
 
+import config
 from docker_ops import DockerOps, free_port
 
 
@@ -80,3 +81,13 @@ class UserContainerManager:
             self._user_locks.pop(user_id, None)   # avoid unbounded growth
         if rt:
             self.ops.remove_container(rt["container"])
+
+    def idle_user_ids(self) -> list:
+        cutoff = self._now() - config.IDLE_TIMEOUT
+        with self.lock:
+            return [uid for uid, rt in self.runtime.items()
+                    if rt["last_active"] < cutoff]
+
+    def reap_idle(self):
+        for uid in self.idle_user_ids():
+            self.stop(uid)
