@@ -26,6 +26,17 @@ _DROP_REQ = _HOP | {"host", "origin", "referer", "x-xsrftoken"}
 _DROP_RESP = {"transfer-encoding", "content-length", "connection",
               "keep-alive", "upgrade", "te", "trailer"}
 
+
+def build_target_url(port: int, upstream_path: str, query: str) -> str:
+    base = f"http://127.0.0.1:{port}/{upstream_path}"
+    return f"{base}?{query}" if query else base
+
+
+def build_ws_url(port: int, upstream_path: str, query: str) -> str:
+    base = f"ws://127.0.0.1:{port}/{upstream_path}"
+    return f"{base}?{query}" if query else base
+
+
 # One pooled client for ALL asset requests. Creating a client per request (the
 # old behaviour) paid connection setup ~50x per notebook boot; a shared pool
 # with keep-alive recovers the directness the iframe version had.
@@ -49,11 +60,11 @@ async def aclose():
     _client = None
 
 
-async def proxy_http(request, uuid: str, path: str, port: int, token: str) -> Response:
+async def proxy_http(request, upstream_path: str, port: int, token: str) -> Response:
     # Forward the RAW query string verbatim (Jupyter uses bare-value cache-bust
     # queries like ?1780212300958 that get mangled if re-encoded via params=).
     q = request.url.query
-    target = f"http://127.0.0.1:{port}/nb/{uuid}/{path}" + (f"?{q}" if q else "")
+    target = build_target_url(port, upstream_path, q)
     headers = {k: v for k, v in request.headers.items()
                if k.lower() not in _DROP_REQ}
     headers["Authorization"] = f"token {token}"
@@ -77,11 +88,11 @@ async def proxy_http(request, uuid: str, path: str, port: int, token: str) -> Re
                              headers=dict(out_headers))
 
 
-async def proxy_ws(websocket: WebSocket, uuid: str, path: str, port: int, token: str):
+async def proxy_ws(websocket: WebSocket, upstream_path: str, port: int, token: str):
     proto = websocket.headers.get("sec-websocket-protocol")
     requested = [p.strip() for p in proto.split(",")] if proto else None
     qs = websocket.url.query
-    target = f"ws://127.0.0.1:{port}/nb/{uuid}/{path}" + (f"?{qs}" if qs else "")
+    target = build_ws_url(port, upstream_path, qs)
     # A freshly-created kernel's channels WS is refused (403/connection error)
     # for the first few seconds while the kernel boots. Ride that out within a
     # SINGLE browser connection (~15s) instead of giving up early — closing here
