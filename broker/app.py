@@ -211,46 +211,29 @@ async def delete_notebook(request: Request, nid: str):
     return {"id": nid, "deleted": True}
 
 
-# ----- reverse proxy for /nb/<uuid>/ -----------------------------------------
-async def _authorize_and_target(uid: str | None, uuid: str):
-    if not uid:
-        raise HTTPException(401, "not authenticated")
-    nb = auth.get_notebook(uuid)
-    if not nb or nb["user_id"] != uid:
-        raise HTTPException(403, "forbidden")
-    if not manager.is_running(uuid):
-        await run_in_threadpool(manager.ensure_running, uuid, nb["volume"], nb["theme"])
-    return manager.target(uuid)
-
-
-@app.websocket("/nb/{uuid}/{path:path}")
-async def nb_ws(websocket: WebSocket, uuid: str, path: str):
+# ----- /api/nb proxy (HTTP + WS) ---------------------------------------------
+@app.websocket("/api/nb/{path:path}")
+async def nb_api_ws(websocket: WebSocket, path: str):
     uid = auth.read_session(websocket.cookies.get(auth.COOKIE_NAME))
-    nb = auth.get_notebook(uuid)
-    if not uid or not nb or nb["user_id"] != uid:
+    if not uid:
         await websocket.close(code=1008)
         return
-    if not manager.is_running(uuid):
-        await run_in_threadpool(manager.ensure_running, uuid, nb["volume"], nb["theme"])
-    tgt = manager.target(uuid)
+    await run_in_threadpool(_sync_ensure, uid)
+    tgt = manager.target(uid)
     if not tgt:
         await websocket.close(code=1011)
         return
-    await proxy.proxy_ws(websocket, uuid, path, tgt["port"], tgt["token"])
+    base = await run_in_threadpool(_container_base, uid)
+    await proxy.proxy_ws(websocket, f"{base}/{path}", tgt["port"], tgt["token"])
 
 
-@app.api_route("/nb/{uuid}", methods=["GET"])
-def nb_root_redirect(uuid: str):
-    return RedirectResponse(f"/nb/{uuid}/", status_code=307)
-
-
-@app.api_route("/nb/{uuid}/{path:path}",
+@app.api_route("/api/nb/{path:path}",
                methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
-async def nb_http(request: Request, uuid: str, path: str = ""):
-    tgt = await _authorize_and_target(_uid(request), uuid)
-    if not tgt:
-        raise HTTPException(502, "notebook not available")
-    return await proxy.proxy_http(request, uuid, path, tgt["port"], tgt["token"])
+async def nb_api_http(request: Request, path: str):
+    uid = _require(request)
+    tgt = await _ensure_user_container(uid)
+    base = await run_in_threadpool(_container_base, uid)
+    return await proxy.proxy_http(request, f"{base}/{path}", tgt["port"], tgt["token"])
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
