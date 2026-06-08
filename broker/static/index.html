@@ -18,35 +18,20 @@
       <div class="section-label">Notebooks</div>
       <div class="list" id="list"></div>
       <div class="side-foot">
-        <label for="theme">Theme</label>
-        <select class="theme-select" id="theme"></select>
         <div class="acct"><span class="email" id="email">&hellip;</span><button class="logout" id="logout">Log out</button></div>
       </div>
     </aside>
     <main class="main">
-      <div class="frames" id="frames"></div>
-      <div class="loading" id="loading" hidden>
-        <div class="sk">
-          <div class="sk-bar w55"></div>
-          <div class="sk-bar w80"></div>
-          <div class="sk-bar w40"></div>
-          <div class="sk-card"></div>
-          <div class="sk-bar w70"></div>
-          <div class="sk-bar w50"></div>
-          <div class="sk-card sk-card-sm"></div>
-        </div>
-        <div class="sk-note">Starting your notebook&hellip;</div>
-      </div>
+      <div class="dash-head"><h1>Your notebooks</h1></div>
       <div class="empty" id="empty">
-        <div class="big">No notebook open</div>
-        <div class="sub">Create or open a notebook from the sidebar to start an isolated, instant session.</div>
+        <div class="big">Select or create a notebook</div>
+        <div class="sub">Open a notebook from the sidebar to start an isolated session.</div>
       </div>
     </main>
   </div>
   <div class="ctx-menu" id="ctx-menu" hidden>
     <button data-act="open">Open</button>
     <button data-act="rename">Rename</button>
-    <button data-act="close">Stop session</button>
     <div class="sep"></div>
     <button data-act="delete" class="danger">Delete</button>
   </div>
