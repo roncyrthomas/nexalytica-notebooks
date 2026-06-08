@@ -77,5 +77,6 @@ class UserContainerManager:
     def stop(self, user_id: str):
         with self.lock:
             rt = self.runtime.pop(user_id, None)
+            self._user_locks.pop(user_id, None)   # avoid unbounded growth
         if rt:
             self.ops.remove_container(rt["container"])
