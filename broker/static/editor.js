@@ -13,7 +13,7 @@
   };
 
   let cells = [];          // {id, type:'code'|'markdown', source, outputs:[], count:null, el, rendered}
-  let kernelId = null, session = null;
+  let kernelId = null, session = null, selectedCell = null;
   const pending = {};      // execute msg_id -> cell.id
 
   const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
@@ -87,6 +87,7 @@
     } else {
       const ta = document.createElement('textarea');
       ta.value = cell.source; ta.rows = Math.max(1, cell.source.split('\n').length);
+      ta.onfocus = () => { selectedCell = cell; };
       ta.oninput = () => { cell.source = ta.value; ta.rows = Math.max(1, ta.value.split('\n').length); };
       ta.onkeydown = (e) => {
         if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); runCell(cell); }
@@ -174,11 +175,15 @@
   }
 
   // ---- toolbar ----
-  document.getElementById('t-run').onclick = () => { const c = cells[0]; if (c) runCell(c); };
+  document.getElementById('t-run').onclick = () => { const c = selectedCell || cells[0]; if (c) runCell(c); };
   document.getElementById('t-runall').onclick = runAll;
   document.getElementById('t-interrupt').onclick = () => kernelId && NB.Kernels.interrupt(kernelId);
   document.getElementById('t-restart').onclick = async () => {
-    if (kernelId) { await NB.Kernels.restart(kernelId); for (const c of cells) { c.count = null; c.outputs = []; } renderAll(); }
+    if (kernelId) {
+      await NB.Kernels.restart(kernelId);
+      for (const k of Object.keys(pending)) delete pending[k];   // drop stale exec routing
+      for (const c of cells) { c.count = null; c.outputs = []; } renderAll();
+    }
   };
   document.getElementById('t-addcode').onclick = () => addCell('code');
   document.getElementById('t-addmd').onclick = () => addCell('markdown');
