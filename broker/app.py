@@ -123,6 +123,13 @@ def register_page(request: Request):
     return FileResponse(os.path.join(STATIC_DIR, "register.html"))
 
 
+@app.get("/e/{nid}")
+def editor_page(request: Request, nid: str):
+    if not _uid(request):
+        return RedirectResponse("/login", status_code=302)
+    return FileResponse(os.path.join(STATIC_DIR, "editor.html"))
+
+
 # ----- auth API --------------------------------------------------------------
 @app.post("/api/auth/register")
 def register(body: Creds):
