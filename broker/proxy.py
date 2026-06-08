@@ -53,6 +53,16 @@ def _get_client() -> httpx.AsyncClient:
     return _client
 
 
+async def put_json(upstream_path: str, port: int, token: str, obj: dict):
+    import json
+    client = _get_client()
+    r = await client.put(build_target_url(port, upstream_path, ""),
+                         content=json.dumps(obj).encode(),
+                         headers={"Authorization": f"token {token}",
+                                  "Content-Type": "application/json"})
+    return r
+
+
 async def aclose():
     global _client
     if _client is not None and not _client.is_closed:

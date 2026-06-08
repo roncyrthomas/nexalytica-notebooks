@@ -170,8 +170,7 @@ def me(request: Request):
 # ----- notebook API ----------------------------------------------------------
 def _public(nb: dict) -> dict:
     return {"id": nb["id"], "name": nb["name"], "theme": nb["theme"],
-            "running": manager.is_running(nb["id"]),
-            "url": f"/nb/{nb['id']}/?key={nb['secret']}"}
+            "path": nb["path"]}
 
 
 @app.get("/api/notebooks")
@@ -183,32 +182,14 @@ def list_notebooks(request: Request):
 @app.post("/api/notebooks")
 async def create_notebook(request: Request, body: CreateBody):
     uid = _require(request)
-    # Claim a pre-warmed container (instant). The notebook id == its uuid.
-    slot = await run_in_threadpool(manager.claim)
-    nb = auth.create_notebook_row(uid, body.name.strip() or "Untitled notebook",
-                                  body.theme, slot["volume"], nid=slot["uuid"])
-    manager.set_theme(slot["uuid"], body.theme)
-    return _public(nb)
-
-
-@app.post("/api/notebooks/{nid}/open")
-async def open_notebook(request: Request, nid: str, body: ThemeBody):
-    uid = _require(request)
-    nb = auth.get_notebook(nid)
-    if not nb or nb["user_id"] != uid:
-        raise HTTPException(404, "no such notebook")
-    await run_in_threadpool(manager.ensure_running, nid, nb["volume"], body.theme)
-    manager.set_theme(nid, body.theme)
-    return _public(nb)
-
-
-@app.post("/api/notebooks/{nid}/close")
-async def close_notebook(request: Request, nid: str):
-    uid = _require(request)
-    nb = auth.get_notebook(nid)
-    if not nb or nb["user_id"] != uid:
-        raise HTTPException(404, "no such notebook")
-    await run_in_threadpool(manager.stop, nid)
+    tgt = await _ensure_user_container(uid)
+    nb = await run_in_threadpool(
+        auth.create_notebook_row, uid, body.name.strip() or "Untitled notebook",
+        body.theme)
+    u = await run_in_threadpool(auth.get_user_full, uid)
+    await proxy.put_json(f"u/{u['container_key']}/api/contents/{nb['path']}",
+                         tgt["port"], tgt["token"],
+                         {"type": "notebook", "content": nbfmt.empty_notebook()})
     return _public(nb)
 
 
@@ -226,8 +207,6 @@ async def delete_notebook(request: Request, nid: str):
     nb = auth.get_notebook(nid)
     if not nb or nb["user_id"] != uid:
         raise HTTPException(404, "no such notebook")
-    await run_in_threadpool(manager.stop, nid)
-    await run_in_threadpool(manager.remove_volume, nb["volume"])
     auth.delete_notebook_row(nid, uid)
     return {"id": nid, "deleted": True}
 
