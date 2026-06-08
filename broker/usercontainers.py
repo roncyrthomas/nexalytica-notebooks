@@ -51,6 +51,7 @@ class UserContainerManager:
 
             token = secrets.token_hex(16)
             port = free_port()
+            self.ops.create_volume(volume)
             container = self.ops.run_container(
                 user_id=user_id, container_key=container_key,
                 token=token, volume=volume, port=port)

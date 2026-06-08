@@ -136,3 +136,9 @@ def test_shutdown_stops_all_and_clears(fake_ops, clock):
 
     assert fake_ops.remove_container.call_count == 2
     assert mgr.runtime == {}
+
+
+def test_ensure_running_creates_volume(fake_ops, clock):
+    mgr = make_mgr(fake_ops, clock)
+    mgr.ensure_running("u1", "key1", "nex-vol-u1")
+    fake_ops.create_volume.assert_called_once_with("nex-vol-u1")
