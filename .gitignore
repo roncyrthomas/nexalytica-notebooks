@@ -15,3 +15,6 @@ nexalytica-themes/nexalytica_themes/
 _shot/*.png
 _mounttest/
 data/
+
+# brainstorming visual-companion mockups
+.superpowers/
