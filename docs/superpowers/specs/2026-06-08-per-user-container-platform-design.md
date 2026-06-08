@@ -180,14 +180,22 @@ WebSocket:
 ## 6. Sub-system 3 — Custom Notebook UI ("Core")
 
 ### 6.1 Stack
-- **React** SPA (served by the broker as static assets, like today's `static/`).
-- **`@jupyterlab/services`** — the official JS client for the Jupyter REST/WS protocol.
-  Configured with `baseUrl` = the broker's `/api/nb/` surface and **no token** (the broker
-  injects it). We do **not** hand-roll the kernel message protocol.
-- **CodeMirror 6** — cell editor (Python mode).
-- Output rendering: lightweight in-house renderers for the Core mimetypes (see §6.4).
-  (Evaluate `@jupyterlab/rendermime` vs hand-rolled during planning; default hand-rolled for
-  the four Core types to avoid pulling in Lab weight.)
+**Revised during implementation (2026-06-09):** the existing frontend is zero-build vanilla
+JS served straight from `broker/static/`. To preserve that (no Node/bundler toolchain, no
+deploy-time build, lowest risk) the Core UI is built as **zero-build vanilla JS**:
+- A small `nbclient.js` module speaks the Jupyter REST contents/kernels API and the kernel
+  WebSocket **v5 message protocol** directly (the Core subset only:
+  `execute_request` → `status`/`execute_input`/`stream`/`execute_result`/`display_data`/
+  `error`/`execute_reply`). Hand-rolling this subset is small and well-understood; it avoids
+  pulling in `@jupyterlab/services` and a bundler.
+- `<textarea>`-based code cells with monospace styling for the Core MVP (a CodeMirror upgrade
+  is a later, isolated enhancement — it does not change the data flow).
+- In-house renderers for the four Core mimetypes (§6.4).
+- Everything is served as static assets exactly like today's dashboard.
+
+The browser still talks **only** to the broker (`/api/nb/...`); the token/port stay server-side.
+A future migration to React + `@jupyterlab/services` + CodeMirror remains open and would not
+change the broker API contract.
 
 ### 6.2 Component architecture
 - `NotebookApp` — owns the open notebook + kernel connection (`@jupyterlab/services`
