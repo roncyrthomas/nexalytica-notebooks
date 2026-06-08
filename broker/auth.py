@@ -46,10 +46,11 @@ def _db():
 def init_db():
     with _lock, _db() as c:
         c.execute("CREATE TABLE IF NOT EXISTS users ("
-                  "id TEXT PRIMARY KEY, email TEXT UNIQUE, pw TEXT, created REAL)")
+                  "id TEXT PRIMARY KEY, email TEXT UNIQUE, pw TEXT, "
+                  "container_key TEXT, volume TEXT, created REAL)")
         c.execute("CREATE TABLE IF NOT EXISTS notebooks ("
                   "id TEXT PRIMARY KEY, user_id TEXT, name TEXT, theme TEXT, "
-                  "volume TEXT, secret TEXT, created REAL)")
+                  "path TEXT, created REAL)")
 
 
 # ----- passwords -------------------------------------------------------------
@@ -71,10 +72,13 @@ def verify_pw(pw: str, stored: str) -> bool:
 # ----- users -----------------------------------------------------------------
 def create_user(email: str, pw: str) -> str | None:
     uid = secrets.token_hex(8)
+    container_key = secrets.token_hex(16)
+    volume = f"nex-vol-{uid}"
     with _lock, _db() as c:
         try:
-            c.execute("INSERT INTO users VALUES (?,?,?,?)",
-                      (uid, email.lower().strip(), hash_pw(pw), time.time()))
+            c.execute("INSERT INTO users VALUES (?,?,?,?,?,?)",
+                      (uid, email.lower().strip(), hash_pw(pw),
+                       container_key, volume, time.time()))
         except sqlite3.IntegrityError:
             return None
     return uid
@@ -90,6 +94,13 @@ def authenticate(email: str, pw: str) -> str | None:
 def get_user(uid: str):
     with _db() as c:
         return c.execute("SELECT id, email FROM users WHERE id=?", (uid,)).fetchone()
+
+
+def get_user_full(uid: str):
+    with _db() as c:
+        row = c.execute("SELECT id, email, container_key, volume FROM users "
+                        "WHERE id=?", (uid,)).fetchone()
+    return dict(row) if row else None
 
 
 # ----- sessions (signed cookie) ----------------------------------------------
@@ -116,15 +127,15 @@ def read_session(cookie: str | None) -> str | None:
 
 
 # ----- notebooks (metadata; runtime state lives in manager) ------------------
-def create_notebook_row(user_id: str, name: str, theme: str, volume: str,
+def create_notebook_row(user_id: str, name: str, theme: str,
                         nid: str | None = None) -> dict:
     nid = nid or secrets.token_hex(8)
-    sec = secrets.token_urlsafe(16)
+    path = f"{nid}.ipynb"
     with _lock, _db() as c:
-        c.execute("INSERT INTO notebooks VALUES (?,?,?,?,?,?,?)",
-                  (nid, user_id, name, theme, volume, sec, time.time()))
+        c.execute("INSERT INTO notebooks VALUES (?,?,?,?,?,?)",
+                  (nid, user_id, name, theme, path, time.time()))
     return {"id": nid, "user_id": user_id, "name": name, "theme": theme,
-            "volume": volume, "secret": sec}
+            "path": path}
 
 
 def list_notebooks(user_id: str) -> list[dict]:
