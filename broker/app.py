@@ -49,10 +49,6 @@ class CreateBody(BaseModel):
     theme: str = "Nexalytica Default Dark"
 
 
-class ThemeBody(BaseModel):
-    theme: str = "Nexalytica Default Dark"
-
-
 class RenameBody(BaseModel):
     name: str
 
