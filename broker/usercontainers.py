@@ -98,3 +98,26 @@ class UserContainerManager:
         for container in self.ops.list_broker_containers():
             if container.id not in known_ids:
                 self.ops.remove_container(container)
+
+    def reap_once(self):
+        self.reap_idle()
+        self.reap_orphans()
+
+    def start_reaper(self):
+        def loop():
+            while not self._stop_evt.wait(config.REAP_INTERVAL):
+                try:
+                    self.reap_once()
+                except Exception:
+                    pass
+        self._stop_evt = threading.Event()
+        threading.Thread(target=loop, daemon=True).start()
+
+    def shutdown(self):
+        if getattr(self, "_stop_evt", None) is not None:
+            self._stop_evt.set()
+        with self.lock:
+            items = list(self.runtime.values())
+            self.runtime.clear()
+        for rt in items:
+            self.ops.remove_container(rt["container"])

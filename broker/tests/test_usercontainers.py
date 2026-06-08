@@ -113,3 +113,26 @@ def test_reap_orphans_removes_unknown_labelled_containers(fake_ops, clock):
     assert orphan in removed
     assert known_container not in removed
     assert mgr.is_running("u1")
+
+
+def test_reap_once_runs_both_reapers(fake_ops, clock, mocker):
+    mgr = make_mgr(fake_ops, clock)
+    spy_idle = mocker.spy(mgr, "reap_idle")
+    spy_orphan = mocker.spy(mgr, "reap_orphans")
+    fake_ops.list_broker_containers.return_value = []
+
+    mgr.reap_once()
+
+    spy_idle.assert_called_once()
+    spy_orphan.assert_called_once()
+
+
+def test_shutdown_stops_all_and_clears(fake_ops, clock):
+    mgr = make_mgr(fake_ops, clock)
+    mgr.ensure_running("u1", "key1", "nex-vol-u1")
+    mgr.ensure_running("u2", "key2", "nex-vol-u2")
+
+    mgr.shutdown()
+
+    assert fake_ops.remove_container.call_count == 2
+    assert mgr.runtime == {}
