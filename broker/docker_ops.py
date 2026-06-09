@@ -66,6 +66,9 @@ class DockerOps:
                 # authenticates with the injected token, so relax browser checks.
                 "--ServerApp.disable_check_xsrf=True",
                 "--ServerApp.allow_origin=*",
+                f"--MappingKernelManager.cull_idle_timeout={config.CULL_IDLE}",
+                f"--MappingKernelManager.cull_interval={config.CULL_INTERVAL}",
+                "--MappingKernelManager.cull_connected=True",
             ],
             # ZERO-SECRET: nothing but the container's own single-tenant token.
             environment={"JUPYTER_TOKEN": token},

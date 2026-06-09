@@ -70,3 +70,14 @@ def test_list_broker_containers_filters_by_label():
     _, kwargs = client.containers.list.call_args
     assert kwargs["all"] is True
     assert kwargs["filters"] == {"label": f"{config.LABEL_KEY}=1"}
+
+
+def test_run_container_sets_kernel_cull():
+    from unittest.mock import MagicMock
+    client = MagicMock()
+    ops = DockerOps(client=client)
+    ops.run_container(user_id="u1", container_key="k", token="t",
+                      volume="v", port=40000)
+    cmd = " ".join(client.containers.run.call_args.kwargs["command"])
+    assert f"cull_idle_timeout={config.CULL_IDLE}" in cmd
+    assert "cull_connected=True" in cmd

@@ -27,6 +27,12 @@ NANO_CPUS = int(os.environ.get("NEX_NANO_CPUS", str(500_000_000)))  # 0.5 CPU
 MEM_LIMIT = os.environ.get("NEX_MEM_LIMIT", "1g")
 PIDS_LIMIT = int(os.environ.get("NEX_PIDS_LIMIT", "256"))
 
+# kernel culling inside the container: free a kernel after 5 min idle so a
+# closed/abandoned notebook stops consuming RAM, while reopening within the
+# window reconnects to the still-live kernel (warm).
+CULL_IDLE = int(os.environ.get("NEX_CULL_IDLE", "300"))      # seconds
+CULL_INTERVAL = int(os.environ.get("NEX_CULL_INTERVAL", "60"))
+
 
 def base_url(container_key: str) -> str:
     """Per-user Jupyter base_url. One Lab/server per user, keyed by an
