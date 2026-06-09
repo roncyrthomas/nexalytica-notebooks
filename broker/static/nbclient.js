@@ -104,5 +104,31 @@
     return { execute, close };
   }
 
-  global.NB = { Contents, Kernels, KernelSession, uuid };
+  // Sessions bind a notebook path to a kernel. Reusing the session on reopen
+  // reconnects to the SAME (warm) kernel instead of starting a cold one.
+  const Sessions = {
+    list: () => jfetch('/api/sessions'),
+    create: (path) => jfetch('/api/sessions', {
+      method: 'POST',
+      body: JSON.stringify({
+        path, type: 'notebook', name: path,
+        kernel: { name: 'python3' },
+      }),
+    }),
+    // get-or-create the session for a notebook path; returns the session object
+    ensure: async (path) => {
+      const all = await Sessions.list();
+      const existing = all.find((s) => s.path === path);
+      return existing || Sessions.create(path);
+    },
+  };
+
+  // nbconvert export endpoint (served by jupyter-server when nbconvert is
+  // installed). format: 'html' | 'script'. Returns a same-origin URL the
+  // browser can open/download; the broker injects the token server-side.
+  function exportUrl(path, format) {
+    return `${BASE}/nbconvert/${format}/${path}?download=true`;
+  }
+
+  global.NB = { Contents, Kernels, Sessions, KernelSession, exportUrl, uuid };
 })(window);
