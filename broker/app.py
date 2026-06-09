@@ -127,7 +127,7 @@ def register_page(request: Request):
 def editor_page(request: Request, nid: str):
     if not _uid(request):
         return RedirectResponse("/login", status_code=302)
-    return FileResponse(os.path.join(STATIC_DIR, "editor.html"))
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
 
 # ----- auth API --------------------------------------------------------------
