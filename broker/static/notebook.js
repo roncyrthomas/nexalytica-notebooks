@@ -254,6 +254,55 @@ window.NotebookView = function (root, nid, hooks) {
     elKDot  = appbar.querySelector('#k-dot-'    + nid);
     elKText = appbar.querySelector('#k-text-'   + nid);
 
+    // Make title clickable to rename inline
+    elName.style.cursor = 'pointer';
+    elName.style.outline = 'none';
+    elName.title = 'Click to rename';
+    elName.onclick = function () {
+      if (elName.isEditing) return;
+      elName.isEditing = true;
+      elName.contentEditable = 'true';
+      elName.focus();
+      
+      const range = document.createRange();
+      range.selectNodeContents(elName);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      
+      const originalName = elName.textContent;
+      
+      function finish() {
+        if (!elName.isEditing) return;
+        elName.isEditing = false;
+        elName.contentEditable = 'false';
+        const newName = elName.textContent.trim();
+        if (!newName) {
+          elName.textContent = originalName;
+        } else if (newName !== originalName) {
+          if (window.renameNotebookApi) {
+            window.renameNotebookApi(nid, newName).catch(function(e) {
+              alert('Rename failed: ' + e.message);
+              elName.textContent = originalName;
+            });
+          }
+        }
+        window.getSelection().removeAllRanges();
+      }
+      
+      elName.onblur = finish;
+      elName.onkeydown = function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          elName.blur();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          elName.textContent = originalName;
+          elName.blur();
+        }
+      };
+    };
+
     // toolbar
     const toolbar = document.createElement('div');
     toolbar.className = 'nb-toolbar';

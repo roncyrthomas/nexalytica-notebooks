@@ -137,19 +137,27 @@ body {
 .jp-Notebook { padding-top: 16px; }
 .jp-WindowedPanel-viewport { padding-bottom: 40vh; }
 
-.jp-Notebook .jp-Cell {
+.jp-Notebook .jp-Cell,
+.jp-Notebook .jp-Cell:hover,
+.jp-Notebook .jp-Cell:focus-within {
   max-width: var(--nx-maxw);
   margin: 0 auto var(--nx-gap);
   padding: 0;
-  background: transparent;
+  background: transparent !important;
   position: relative;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: var(--nx-radius) !important;
 }
 
 /* ---------------------------------------------------------------------------
    4. Hide prompts + collapse the gutter so input/output sit flush-left.
    --------------------------------------------------------------------------- */
 .jp-InputPrompt,
-.jp-OutputPrompt { display: none !important; }
+.jp-OutputPrompt,
+.jp-InputArea-prompt,
+.jp-OutputArea-prompt { display: none !important; }
 .jp-Cell .jp-Collapser {
   flex: 0 0 0; width: 0; min-width: 0;
   margin: 0; padding: 0; background: transparent; border: none;
@@ -167,17 +175,30 @@ body {
 
 /* Input surface = the bespoke card. Constant 1px border in ALL states (only
    the color changes when active) so activating never shifts the layout. */
-.jp-CodeCell .jp-Cell-inputWrapper {
+.jp-CodeCell .jp-Cell-inputWrapper,
+.jp-CodeCell .jp-Cell-inputWrapper:hover {
   background: var(--nx-surface);
   border: 1px solid var(--nx-hairline);
   border-radius: var(--nx-radius);
   overflow: hidden;
+  outline: none !important;
+  box-shadow: none !important;
   transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
 .jp-CodeCell .jp-InputArea,
-.jp-CodeCell .jp-InputArea-editor {
-  background: transparent;
-  border: 0 !important;
+.jp-CodeCell .jp-InputArea:hover,
+.jp-CodeCell .jp-Cell-inputArea,
+.jp-CodeCell .jp-Cell-inputArea:hover,
+.jp-CodeCell .jp-InputArea-editor,
+.jp-CodeCell .jp-InputArea-editor:hover,
+.jp-CodeCell .cm-editor,
+.jp-CodeCell .cm-editor:hover,
+.jp-Notebook .jp-CodeCell:hover {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: var(--nx-radius) !important;
 }
 .jp-CodeCell .jp-InputArea-editor {
   padding: var(--nx-pad-y) var(--nx-pad-x);

@@ -27,7 +27,7 @@
 .cell:hover{background:color-mix(in oklch,var(--fg) 6%,transparent)}
 .cell .gutter{width:54px;flex:0 0 54px;padding-top:10px;text-align:right;color:var(--muted-fg);
   font-family:ui-monospace,Consolas,monospace;font-size:12px;user-select:none}
-.cell .main{flex:1;min-width:0}
+.cell .main{flex:1;min-width:0;background:transparent !important}
 .cell textarea{width:100%;background:var(--bg);color:var(--fg);border:1px solid var(--border);
   border-radius:8px;padding:10px 12px;font-family:ui-monospace,"Cascadia Code",Consolas,monospace;
   font-size:13px;line-height:1.5;resize:vertical;min-height:38px;outline:none}

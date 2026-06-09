@@ -183,6 +183,14 @@ async function renameNotebook(id) {
   render();
 }
 
+window.renameNotebookApi = async function(id, newName) {
+  const n = find(id);
+  if (!n || !newName || newName === n.name) return;
+  Object.assign(n, await api('/api/notebooks/' + id, 'PATCH', { name: newName }));
+  if (id === activeId && activeView && activeView.setName) activeView.setName(n.name);
+  render();
+};
+
 async function exportNotebook(id, fmt) {
   // if the notebook is open, delegate directly
   if (id === activeId && activeView) {
