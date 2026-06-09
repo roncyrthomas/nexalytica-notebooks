@@ -365,6 +365,9 @@ window.NotebookView = function (root, nid, hooks) {
       });
       if (cells.length === 0) addCell('code'); else renderAll();
       hooks.onLoaded && hooks.onLoaded();
+      // auto-start the kernel as soon as the notebook opens (warm by the time
+      // the user runs their first cell), instead of waiting for the first run.
+      ensureKernel().catch(function () { setKernel('dead'); });
     } catch (e) {
       elCells.innerHTML = '<div class="output err">Failed to load notebook: ' + esc(e.message) + '</div>';
       hooks.onLoaded && hooks.onLoaded();

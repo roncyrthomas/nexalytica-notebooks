@@ -22,7 +22,8 @@
 
 .nb-scroll{flex:1;overflow:auto;min-height:0}
 .nb-cells{padding:20px 16px;max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
-.cell{position:relative;display:flex;gap:10px;border:1px solid transparent;border-radius:var(--radius);padding:6px}
+.cell{position:relative;display:flex;gap:10px;border:1px solid transparent;border-radius:var(--radius);padding:6px;
+  transition:border-color .12s ease, background .12s ease}
 .cell:hover{border-color:var(--border);background:color-mix(in oklch,var(--fg) 4%,transparent)}
 .cell .gutter{width:54px;flex:0 0 54px;padding-top:10px;text-align:right;color:var(--muted-fg);
   font-family:ui-monospace,Consolas,monospace;font-size:12px;user-select:none}
@@ -37,9 +38,10 @@
 .cell .output.err{border-left-color:oklch(0.62 0.21 25);color:oklch(0.7 0.17 25)}
 .cell .output img{max-width:100%;background:#fff;border-radius:4px}
 .cell .md{padding:6px 4px;color:var(--fg);line-height:1.6}
-.cell .actions{position:absolute;top:8px;right:10px;display:none;gap:4px;background:var(--card);
-  border:1px solid var(--border);border-radius:8px;padding:3px}
-.cell:hover .actions{display:flex}
+.cell .actions{position:absolute;top:8px;right:10px;display:flex;gap:4px;background:var(--card);
+  border:1px solid var(--border);border-radius:8px;padding:3px;
+  opacity:0;pointer-events:none;transition:opacity .12s ease}
+.cell:hover .actions, .cell:focus-within .actions{opacity:1;pointer-events:auto}
 .cell .actions button{width:26px;height:24px;display:grid;place-items:center;border:0;background:transparent;
   color:var(--muted-fg);border-radius:6px;cursor:pointer}
 .cell .actions button:hover{background:color-mix(in oklch,var(--fg) 10%,transparent);color:var(--fg)}
