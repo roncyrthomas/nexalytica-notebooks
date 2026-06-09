@@ -38,6 +38,20 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="Nexalytica Notebooks (multi-user)", lifespan=lifespan)
 
 
+@app.middleware("http")
+async def _revalidate_assets(request: Request, call_next):
+    """Force the browser to revalidate static assets + app pages instead of
+    serving a stale cached copy. Without this, a redeployed app.js can be served
+    from cache while the (revalidated) HTML is fresh — desyncing the two and
+    silently breaking the UI. `no-cache` keeps the cache but requires an ETag
+    check, so unchanged files still return a cheap 304."""
+    resp = await call_next(request)
+    p = request.url.path
+    if p.startswith("/static") or p == "/" or p.startswith("/e/") or p.startswith("/n/"):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+
+
 # ----- models ----------------------------------------------------------------
 class Creds(BaseModel):
     email: str
