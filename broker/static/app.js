@@ -84,6 +84,8 @@ function showEditor() {
 async function openNotebook(id, push) {
   if (push === undefined) push = true;
   const n = find(id); if (!n) return;
+  // already open: don't remount (would drop the warm kernel + in-memory state)
+  if (id === activeId && activeView) { if (push) history.pushState({ id }, '', '/e/' + id); return; }
   if (push) history.pushState({ id }, '', '/e/' + id);
   activeId = id;
   render();
@@ -92,17 +94,22 @@ async function openNotebook(id, push) {
   // tear down previous view
   if (activeView) { activeView.destroy(); activeView = null; }
 
-  activeView = window.NotebookView(els.editorRoot, id, {
-    onTitle: function (name) {
-      // update sidebar item name if server returns a different display name
-      if (n) n.name = name;
-      render();
-    },
-    onKernel: function () { /* kernel pill lives inside the view */ },
-    onLoaded: function () {
-      showEditor();
-    },
-  });
+  try {
+    activeView = window.NotebookView(els.editorRoot, id, {
+      onTitle: function (name) {
+        // update sidebar item name if server returns a different display name
+        if (n) n.name = name;
+        render();
+      },
+      onKernel: function () { /* kernel pill lives inside the view */ },
+      onLoaded: function () {
+        showEditor();
+      },
+    });
+  } catch (e) {
+    showEmpty();            // never leave the shimmer stuck on a synchronous failure
+    throw e;
+  }
 
   render();
 }
