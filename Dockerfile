@@ -16,7 +16,8 @@ FROM quay.io/jupyter/base-notebook:latest
 # proxied transparently under /nb/<uuid>/). Without it, tabs are independent
 # views and saves clobber each other.
 RUN pip install --no-cache-dir \
-        "jupyterlab>=4.4,<4.5" "notebook>=7.4,<7.5" "jupyter-collaboration>=4,<5" && \
+        "jupyterlab>=4.4,<4.5" "notebook>=7.4,<7.5" "jupyter-collaboration>=4,<5" \
+        "nbconvert>=7" && \
     jupyter lab build 2>/dev/null || true && \
     fix-permissions "${CONDA_DIR}" && fix-permissions "/home/${NB_USER}"
 
