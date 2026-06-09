@@ -22,9 +22,9 @@
 
 .nb-scroll{flex:1;overflow:auto;min-height:0}
 .nb-cells{padding:20px 16px;max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
-.cell{position:relative;display:flex;gap:10px;border:1px solid transparent;border-radius:var(--radius);padding:6px;
-  transition:border-color .12s ease, background .12s ease}
-.cell:hover{border-color:var(--border);background:color-mix(in oklch,var(--fg) 4%,transparent)}
+.cell{position:relative;display:flex;gap:10px;border-radius:10px;padding:8px;
+  transition:background .12s ease}
+.cell:hover{background:color-mix(in oklch,var(--fg) 6%,transparent)}
 .cell .gutter{width:54px;flex:0 0 54px;padding-top:10px;text-align:right;color:var(--muted-fg);
   font-family:ui-monospace,Consolas,monospace;font-size:12px;user-select:none}
 .cell .main{flex:1;min-width:0}
