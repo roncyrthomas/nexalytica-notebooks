@@ -43,3 +43,7 @@
 .cell .actions button{width:26px;height:24px;display:grid;place-items:center;border:0;background:transparent;
   color:var(--muted-fg);border-radius:6px;cursor:pointer}
 .cell .actions button:hover{background:color-mix(in oklch,var(--fg) 10%,transparent);color:var(--fg)}
+
+/* SPA shell — editor-root pane */
+#editor-root{display:none;flex:1;min-height:0;flex-direction:column}
+#editor-root.active{display:flex}

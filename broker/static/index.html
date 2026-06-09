@@ -3,38 +3,53 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Notebook</title>
+  <title>Nexalytica Notebooks</title>
   <link rel="stylesheet" href="/static/themes.css" />
   <link rel="stylesheet" href="/static/app.css" />
+  <link rel="stylesheet" href="/static/editor.css" />
 </head>
 <body>
   <div class="app">
     <aside class="sidebar">
-      <div class="side-head">
-        <span class="brand-logo"></span><span class="brand-name">Notebook</span>
-      </div>
+      <div class="side-head"><span class="brand-logo"></span><span class="brand-name">Nexalytica</span></div>
       <button class="new-btn" id="new-btn">&#43;&nbsp; New notebook</button>
       <div class="search"><input id="search" type="text" placeholder="Search notebooks&hellip;" autocomplete="off" /></div>
       <div class="section-label">Notebooks</div>
       <div class="list" id="list"></div>
       <div class="side-foot">
+        <label for="theme">Theme</label>
+        <select class="theme-select" id="theme"></select>
         <div class="acct"><span class="email" id="email">&hellip;</span><button class="logout" id="logout">Log out</button></div>
       </div>
     </aside>
     <main class="main">
-      <div class="dash-head"><h1>Your notebooks</h1></div>
-      <div class="empty" id="empty">
+      <div id="empty" class="empty">
         <div class="big">Select or create a notebook</div>
         <div class="sub">Open a notebook from the sidebar to start an isolated session.</div>
       </div>
+      <div id="loading" class="loading" hidden>
+        <div class="shimmer-wrap">
+          <div class="shimmer-bar w60"></div>
+          <div class="shimmer-bar w80"></div>
+          <div class="shimmer-bar w40"></div>
+        </div>
+        <div class="loading-note">Starting your notebook&hellip;</div>
+      </div>
+      <div id="editor-root"></div>
     </main>
   </div>
   <div class="ctx-menu" id="ctx-menu" hidden>
     <button data-act="open">Open</button>
     <button data-act="rename">Rename</button>
     <div class="sep"></div>
+    <button data-act="export-ipynb">Export .ipynb</button>
+    <button data-act="export-py">Export .py</button>
+    <button data-act="export-html">Export .html</button>
+    <div class="sep"></div>
     <button data-act="delete" class="danger">Delete</button>
   </div>
+  <script src="/static/nbclient.js"></script>
+  <script src="/static/notebook.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>
